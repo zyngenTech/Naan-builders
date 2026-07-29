@@ -1,0 +1,130 @@
+<app-hero
+  [backgroundImage]="settings()?.heroImageUrl || 'assets/images/hero-home.jpg'"
+  [backgroundVideo]="settings()?.heroVideoUrl || ''"
+  [eyebrow]="settings()?.homeHeroEyebrow || 'Independent Civil Engineer & Building Contractor'"
+  [title]="settings()?.homeHeroTitle || 'We Build Dreams Into Reality'"
+  [subtitle]="settings()?.homeHeroSubtitle || '35+ Successfully Completed Homes - crafted with precision engineering, honest craftsmanship, and a personal commitment to every family we build for.'"
+  [showButtons]="true"
+></app-hero>
+
+<!-- STATS STRIP -->
+<section class="stats section">
+  <div class="container-xl stats__grid">
+    <app-counter [end]="settings()?.projectsCompleted ?? 0" suffix="+" label="Projects Completed"></app-counter>
+    <app-counter [end]="settings()?.clientSatisfactionPercent ?? 0" suffix="%" label="Satisfied Clients"></app-counter>
+    <app-counter [end]="settings()?.yearsExperience ?? 0" suffix="+" label="Years Experience"></app-counter>
+    <app-counter [end]="settings()?.citiesServed ?? 0" suffix="+" label="Cities Served"></app-counter>
+  </div>
+</section>
+
+<!-- SERVICES PREVIEW -->
+<section class="section section--alt">
+  <div class="container-xl">
+    <app-section-title
+      eyebrow="What We Do"
+      title="Comprehensive Construction Services"
+      subtitle="From the first sketch to the final handover, every stage is planned and supervised in-house."
+    ></app-section-title>
+
+    @if (isLoadingServices()) {
+      <app-loader label="Loading services..." [fullHeight]="false"></app-loader>
+    } @else {
+      <div class="services-grid">
+        @for (service of services(); track service.id) {
+          <div class="service-card glass-card">
+            <div class="service-card__icon"><i [class]="service.icon"></i></div>
+            <h3>{{ service.title }}</h3>
+            <p>{{ service.description }}</p>
+          </div>
+        }
+      </div>
+    }
+
+    <div class="text-center mt-5">
+      <a routerLink="/services" class="btn-luxury btn-luxury--outline">Explore All Services <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+
+<!-- LATEST PROJECTS -->
+<section class="section">
+  <div class="container-xl">
+    <app-section-title
+      eyebrow="Portfolio"
+      title="Our Latest Projects"
+      subtitle="A small selection of homes we've recently delivered across the region."
+    ></app-section-title>
+
+    @if (isLoadingProjects()) {
+      <app-loader label="Loading projects..." [fullHeight]="false"></app-loader>
+    } @else if (featuredProjects().length === 0) {
+      <p class="text-center">Projects will appear here shortly - add documents to the "projects" Firestore collection.</p>
+    } @else {
+      <div class="projects-grid">
+        @for (project of featuredProjects(); track project.id) {
+          <app-project-card [project]="project"></app-project-card>
+        }
+      </div>
+    }
+
+    <div class="text-center mt-5">
+      <a routerLink="/projects" class="btn-luxury btn-luxury--primary">View All Projects <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS TIMELINE -->
+<section class="section section--alt">
+  <div class="container-xl">
+    <app-section-title
+      eyebrow="How We Work"
+      title="Our Construction Process"
+      subtitle="A transparent, four-stage process so you always know what's happening with your home."
+    ></app-section-title>
+
+    <div class="process-timeline">
+      @for (step of processSteps; track step.title; let i = $index) {
+        <div class="process-step">
+          <div class="process-step__number">{{ i + 1 }}</div>
+          <div class="process-step__icon"><i [class]="step.icon"></i></div>
+          <h4>{{ step.title }}</h4>
+          <p>{{ step.desc }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS PREVIEW -->
+@if (testimonials().length > 0) {
+  <section class="section">
+    <div class="container-xl">
+      <app-section-title eyebrow="Client Stories" title="What Our Clients Say"></app-section-title>
+      <div class="testimonial-preview-grid">
+        @for (t of testimonials(); track t.id) {
+          <div class="testimonial-preview glass-card">
+            <div class="testimonial-preview__stars">
+              @for (star of [1,2,3,4,5]; track star) {
+                <i class="fa-solid fa-star" [class.is-dim]="star > t.rating"></i>
+              }
+            </div>
+            <p>"{{ t.feedback }}"</p>
+            <strong>{{ t.customerName }}</strong>
+            @if (t.location) { <span>{{ t.location }}</span> }
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}
+
+<!-- FINAL CTA -->
+<section class="cta section">
+  <div class="container-xl cta__inner glass-card">
+    <div>
+      <h2>Ready to Build Your Dream Home?</h2>
+      <p>Get a free consultation and a transparent estimate within 48 hours.</p>
+    </div>
+    <a routerLink="/contact" class="btn-luxury btn-luxury--primary">Request a Free Quote <i class="fa-solid fa-arrow-right"></i></a>
+  </div>
+</section>

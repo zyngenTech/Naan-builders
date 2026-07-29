@@ -1,0 +1,52 @@
+.about-intro {
+  display: grid;
+  grid-template-columns: 0.9fr 1.4fr;
+  gap: var(--space-lg);
+  align-items: center;
+}
+.about-intro__photo { overflow: hidden; aspect-ratio: 3/4; padding: 0; }
+.about-intro__photo img { width: 100%; height: 100%; object-fit: cover; }
+.about-intro__content h2 { font-size: clamp(1.8rem, 3vw, 2.4rem); margin: 0.5rem 0 1rem; }
+.about-intro__content .section-title__eyebrow { font-size: 0.78rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-gold); font-weight: 600; }
+
+.about-intro__stats { display: flex; gap: var(--space-lg); margin-top: 1.5rem; }
+.about-intro__stats strong { display: block; font-family: var(--font-heading); font-size: 1.8rem; color: var(--color-gold-light); }
+.about-intro__stats span { font-size: 0.8rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+.vision-mission { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+.vision-mission__card { padding: var(--space-lg); text-align: center; }
+.vision-mission__card i { font-size: 2rem; color: var(--color-gold); margin-bottom: 1rem; }
+
+.about-timeline { display: flex; flex-direction: column; gap: var(--space-md); position: relative; }
+.about-timeline::before {
+  content: ''; position: absolute; left: 62px; top: 0; bottom: 0; width: 1px;
+  background: var(--color-border);
+}
+.about-timeline__item { display: flex; gap: var(--space-md); align-items: flex-start; position: relative; }
+.about-timeline__year {
+  width: 62px; flex-shrink: 0; font-family: var(--font-heading); font-weight: 700; color: var(--color-gold);
+  text-align: right; padding-right: 1rem; position: relative;
+}
+.about-timeline__year::after {
+  content: ''; position: absolute; right: -4px; top: 6px; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--color-gold); box-shadow: 0 0 0 4px rgba(201,162,103,0.2);
+}
+.about-timeline__content { flex: 1; padding: 1.3rem 1.5rem; }
+.about-timeline__content h4 { margin-bottom: 0.4rem; }
+.about-timeline__content p { margin-bottom: 0; }
+
+.certificates-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); }
+.certificate-card { padding: 0.6rem; overflow: hidden; }
+.certificate-card img { width: 100%; border-radius: var(--radius-sm); }
+
+@media (max-width: 991px) {
+  .about-intro { grid-template-columns: 1fr; }
+  .about-intro__photo { max-width: 340px; margin: 0 auto; }
+  .vision-mission { grid-template-columns: 1fr; }
+  .certificates-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 575px) {
+  .about-intro__stats { flex-wrap: wrap; gap: var(--space-md); }
+  .about-timeline::before { left: 40px; }
+  .about-timeline__year { width: 40px; font-size: 0.85rem; }
+}

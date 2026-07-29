@@ -1,0 +1,51 @@
+rules_version = '2';
+
+// Public read-only content (projects, gallery, services, testimonials, settings)
+// is visible to every visitor with no login required, matching the "no
+// authentication" requirement. Writes to those collections are blocked from
+// the client - manage that content from the Firebase console instead.
+//
+// The "inquiries" collection is the one exception: visitors are allowed to
+// CREATE a new inquiry (the contact form), but cannot read, update, or
+// delete any inquiry - so nobody can browse other customers' submissions.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /projects/{projectId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /gallery/{itemId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /videos/{videoId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /testimonials/{testimonialId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /inquiries/{inquiryId} {
+      allow create: if request.resource.data.keys().hasAll(['name', 'phone', 'email', 'message'])
+                    && request.resource.data.name is string
+                    && request.resource.data.email is string;
+      allow read, update, delete: if false;
+    }
+  }
+}

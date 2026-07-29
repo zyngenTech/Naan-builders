@@ -1,0 +1,32 @@
+<header class="navbar" [class.navbar--solid]="isScrolled() || isMenuOpen()">
+  <div class="container-xl navbar__inner">
+    <a routerLink="/" class="navbar__brand" (click)="closeMenu()">
+      @if (settings()?.logoUrl) {
+        <img [src]="settings()!.logoUrl" alt="" class="navbar__logo" />
+      } @else {
+        <i class="fa-solid fa-building-columns"></i>
+      }
+      <span>{{ settings()?.siteName || 'Ramesh Kumar' }} <small>Construction</small></span>
+    </a>
+
+    <nav class="navbar__links" [class.navbar__links--open]="isMenuOpen()">
+      @for (link of links; track link.path) {
+        <a
+          [routerLink]="link.path"
+          routerLinkActive="is-active"
+          [routerLinkActiveOptions]="{ exact: link.path === '/' }"
+          (click)="closeMenu()"
+        >
+          {{ link.label }}
+        </a>
+      }
+      <a routerLink="/contact" class="btn-luxury btn-luxury--primary navbar__cta" (click)="closeMenu()">
+        Get a Quote
+      </a>
+    </nav>
+
+    <button class="navbar__toggle" (click)="toggleMenu()" [attr.aria-expanded]="isMenuOpen()" aria-label="Toggle navigation menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>

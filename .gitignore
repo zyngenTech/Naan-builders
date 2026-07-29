@@ -1,0 +1,10 @@
+/dist
+/node_modules
+/.angular
+npm-debug.log
+yarn-error.log
+.DS_Store
+Thumbs.db
+/.firebase
+firebase-debug.log
+firestore-debug.log

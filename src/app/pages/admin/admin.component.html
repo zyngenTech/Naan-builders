@@ -1,0 +1,710 @@
+<div class="admin">
+  <header class="admin__topbar">
+    <a routerLink="/" class="admin__brand">
+      <i class="fa-solid fa-building-columns"></i>
+      <span>Admin Panel</span>
+    </a>
+    <div class="admin__user">
+      <span class="admin__email">{{ currentUserEmail }}</span>
+      <button class="admin__logout" (click)="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+    </div>
+  </header>
+
+  <nav class="admin__tabs">
+    <button [class.is-active]="activeTab() === 'projects'" (click)="setTab('projects')">
+      <i class="fa-solid fa-diagram-project"></i> Projects
+    </button>
+    <button [class.is-active]="activeTab() === 'testimonials'" (click)="setTab('testimonials')">
+      <i class="fa-solid fa-quote-left"></i> Testimonials
+    </button>
+    <button [class.is-active]="activeTab() === 'services'" (click)="setTab('services')">
+      <i class="fa-solid fa-toolbox"></i> Services
+    </button>
+    <button [class.is-active]="activeTab() === 'gallery'" (click)="setTab('gallery')">
+      <i class="fa-solid fa-images"></i> Gallery
+    </button>
+    <button [class.is-active]="activeTab() === 'site'" (click)="setTab('site')">
+      <i class="fa-solid fa-sliders"></i> Site Info
+    </button>
+    <button [class.is-active]="activeTab() === 'hero'" (click)="setTab('hero')">
+      <i class="fa-solid fa-clapperboard"></i> Hero Banner
+    </button>
+  </nav>
+
+  <main class="admin__content container-xl">
+    <!-- ================= PROJECTS TAB ================= -->
+    @if (activeTab() === 'projects') {
+      <section class="admin-section">
+        @if (!showProjectForm()) {
+          <div class="admin-section__header">
+            <h2>Projects</h2>
+            <button class="btn-luxury btn-luxury--primary" (click)="openNewProjectForm()">
+              <i class="fa-solid fa-plus"></i> Add Project
+            </button>
+          </div>
+
+          @if (isLoadingProjects()) {
+            <app-loader></app-loader>
+          } @else if (projects().length === 0) {
+            <p class="admin-empty">No projects yet. Click "Add Project" to create your first one.</p>
+          } @else {
+            <div class="row g-3">
+              @for (project of projects(); track project.id) {
+                <div class="col-6 col-md-4 col-lg-3">
+                  <div class="admin-card glass-card">
+                    <img [src]="project.coverImage" [alt]="project.title" class="admin-card__img" />
+                    @if (project.featured) {
+                      <span class="admin-card__badge">Featured</span>
+                    }
+                    <div class="admin-card__body">
+                      <h4>{{ project.title }}</h4>
+                      <p><i class="fa-solid fa-location-dot"></i> {{ project.location }}</p>
+                      <div class="admin-card__actions">
+                        <button (click)="openEditProjectForm(project)" aria-label="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button (click)="deleteProject(project)" class="is-danger" aria-label="Delete"><i class="fa-solid fa-trash"></i></button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        } @else {
+          <!-- ============ PROJECT ADD/EDIT FORM ============ -->
+          <div class="admin-section__header">
+            <h2>{{ editingProjectId() ? 'Edit Project' : 'Add Project' }}</h2>
+            <button class="admin-link-btn" (click)="cancelProjectForm()"><i class="fa-solid fa-xmark"></i> Cancel</button>
+          </div>
+
+          <form [formGroup]="projectForm" (ngSubmit)="saveProject()" class="row g-3 admin-form">
+            <div class="col-12">
+              <label class="form-label">Project Title *</label>
+              <input type="text" class="form-control" formControlName="title" placeholder="e.g. Sri Lakshmi Residence" />
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Short Description *</label>
+              <textarea class="form-control" rows="2" formControlName="description" placeholder="Shown on the project card"></textarea>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Full Description</label>
+              <textarea class="form-control" rows="3" formControlName="fullDescription" placeholder="Shown on the project details page"></textarea>
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">Location *</label>
+              <input type="text" class="form-control" formControlName="location" placeholder="City, State" />
+            </div>
+            <div class="col-6">
+              <label class="form-label">Completed Date *</label>
+              <input type="date" class="form-control" formControlName="completedDate" />
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">Project Type</label>
+              <select class="form-select" formControlName="projectType">
+                @for (type of projectTypes; track type) {
+                  <option [value]="type">{{ type }}</option>
+                }
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Area (sqft)</label>
+              <input type="number" class="form-control" formControlName="areaSqft" min="0" />
+            </div>
+
+            <div class="col-12">
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="featured" formControlName="featured" />
+                <label class="form-check-label" for="featured">Show in "Latest Projects" on the homepage</label>
+              </div>
+            </div>
+
+            <!-- Cover image -->
+            <div class="col-6">
+              <label class="form-label">Cover Photo *</label>
+              <input type="file" class="form-control" accept="image/*" (change)="onCoverFileSelected($event)" />
+              @if (isUploadingCover()) {
+                <small class="admin-upload-hint"><i class="fa-solid fa-spinner fa-spin"></i> Uploading...</small>
+              }
+            </div>
+            <div class="col-6">
+              @if (coverImageUrl()) {
+                <img [src]="coverImageUrl()" alt="Cover preview" class="admin-preview-thumb" />
+              }
+            </div>
+
+            <!-- Gallery images -->
+            <div class="col-12">
+              <label class="form-label">Gallery Photos (multiple)</label>
+              <input type="file" class="form-control" accept="image/*" multiple (change)="onGalleryFileSelected($event)" />
+              @if (isUploadingGallery()) {
+                <small class="admin-upload-hint"><i class="fa-solid fa-spinner fa-spin"></i> Uploading...</small>
+              }
+            </div>
+            @if (galleryUrls().length > 0) {
+              <div class="col-12">
+                <div class="row g-2">
+                  @for (url of galleryUrls(); track url) {
+                    <div class="col-6 col-md-3">
+                      <div class="admin-preview-tile">
+                        <img [src]="url" alt="Gallery item" />
+                        <button type="button" (click)="removeGalleryImage(url)" aria-label="Remove"><i class="fa-solid fa-xmark"></i></button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Project video -->
+            <div class="col-12">
+              <label class="form-label">Project Video (optional)</label>
+              <input type="file" class="form-control" accept="video/*" (change)="onVideoFileSelected($event)" />
+              @if (isUploadingVideo()) {
+                <small class="admin-upload-hint"><i class="fa-solid fa-spinner fa-spin"></i> Uploading...</small>
+              }
+            </div>
+            @if (videoUrls().length > 0) {
+              <div class="col-12">
+                <div class="row g-2">
+                  @for (url of videoUrls(); track url) {
+                    <div class="col-6">
+                      <div class="admin-preview-tile admin-preview-tile--video">
+                        <video [src]="url" controls muted></video>
+                        <button type="button" (click)="removeVideo(url)" aria-label="Remove"><i class="fa-solid fa-xmark"></i></button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <div class="col-12 col-md-6">
+              <button type="submit" class="btn-luxury btn-luxury--primary admin-form__submit" [disabled]="isSavingProject()">
+                @if (isSavingProject()) {
+                  <span class="spinner"></span> Saving...
+                } @else {
+                  <i class="fa-solid fa-check"></i> Save Project
+                }
+              </button>
+            </div>
+          </form>
+        }
+      </section>
+    }
+
+    <!-- ================= TESTIMONIALS TAB ================= -->
+    @if (activeTab() === 'testimonials') {
+      <section class="admin-section">
+        @if (!showTestimonialForm()) {
+          <div class="admin-section__header">
+            <h2>Testimonials</h2>
+            <button class="btn-luxury btn-luxury--primary" (click)="openNewTestimonialForm()">
+              <i class="fa-solid fa-plus"></i> Add Testimonial
+            </button>
+          </div>
+
+          @if (isLoadingTestimonials()) {
+            <app-loader></app-loader>
+          } @else if (testimonials().length === 0) {
+            <p class="admin-empty">No testimonials yet. Click "Add Testimonial" to add your first customer review.</p>
+          } @else {
+            <div class="row g-3">
+              @for (t of testimonials(); track t.id) {
+                <div class="col-6 col-md-4">
+                  <div class="admin-card glass-card admin-card--testimonial">
+                    <div class="admin-card__body">
+                      <div class="admin-testimonial__top">
+                        @if (t.photoUrl) {
+                          <img [src]="t.photoUrl" [alt]="t.customerName" class="admin-testimonial__photo" />
+                        } @else {
+                          <div class="admin-testimonial__photo admin-testimonial__photo--placeholder"><i class="fa-solid fa-user"></i></div>
+                        }
+                        <div>
+                          <h4>{{ t.customerName }}</h4>
+                          @if (t.location) { <p class="admin-testimonial__location">{{ t.location }}</p> }
+                        </div>
+                      </div>
+                      <div class="admin-testimonial__stars">
+                        @for (n of [1,2,3,4,5]; track n) {
+                          <i class="fa-solid fa-star" [class.is-dim]="n > t.rating"></i>
+                        }
+                      </div>
+                      <p class="admin-testimonial__feedback">{{ t.feedback }}</p>
+                      <div class="admin-card__actions">
+                        <button (click)="openEditTestimonialForm(t)" aria-label="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button (click)="deleteTestimonial(t)" class="is-danger" aria-label="Delete"><i class="fa-solid fa-trash"></i></button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        } @else {
+          <div class="admin-section__header">
+            <h2>{{ editingTestimonialId() ? 'Edit Testimonial' : 'Add Testimonial' }}</h2>
+            <button class="admin-link-btn" (click)="cancelTestimonialForm()"><i class="fa-solid fa-xmark"></i> Cancel</button>
+          </div>
+
+          <form [formGroup]="testimonialForm" (ngSubmit)="saveTestimonial()" class="row g-3 admin-form">
+            <div class="col-6">
+              <label class="form-label">Customer Name *</label>
+              <input type="text" class="form-control" formControlName="customerName" />
+            </div>
+            <div class="col-6">
+              <label class="form-label">Location</label>
+              <input type="text" class="form-control" formControlName="location" placeholder="City, State" />
+            </div>
+
+            <div class="col-6">
+              <label class="form-label">Rating (1-5) *</label>
+              <select class="form-select" formControlName="rating">
+                @for (n of [5,4,3,2,1]; track n) {
+                  <option [ngValue]="n">{{ n }} Star{{ n > 1 ? 's' : '' }}</option>
+                }
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Photo (optional)</label>
+              <input type="file" class="form-control" accept="image/*" (change)="onTestimonialPhotoSelected($event)" />
+              @if (isUploadingTestimonialPhoto()) {
+                <small class="admin-upload-hint"><i class="fa-solid fa-spinner fa-spin"></i> Uploading...</small>
+              }
+            </div>
+            @if (testimonialPhotoUrl()) {
+              <div class="col-6">
+                <img [src]="testimonialPhotoUrl()" alt="Photo preview" class="admin-preview-thumb admin-preview-thumb--round" />
+              </div>
+            }
+
+            <div class="col-12">
+              <label class="form-label">Feedback *</label>
+              <textarea class="form-control" rows="4" formControlName="feedback" placeholder="What did the customer say?"></textarea>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <button type="submit" class="btn-luxury btn-luxury--primary admin-form__submit" [disabled]="isSavingTestimonial()">
+                @if (isSavingTestimonial()) {
+                  <span class="spinner"></span> Saving...
+                } @else {
+                  <i class="fa-solid fa-check"></i> Save Testimonial
+                }
+              </button>
+            </div>
+          </form>
+        }
+      </section>
+    }
+
+    <!-- ================= SERVICES TAB ================= -->
+    @if (activeTab() === 'services') {
+      <section class="admin-section">
+        @if (!showServiceForm()) {
+          <div class="admin-section__header">
+            <h2>Services</h2>
+            <button class="btn-luxury btn-luxury--primary" (click)="openNewServiceForm()">
+              <i class="fa-solid fa-plus"></i> Add Service
+            </button>
+          </div>
+
+          @if (isLoadingServices()) {
+            <app-loader></app-loader>
+          } @else if (services().length === 0) {
+            <p class="admin-empty">No services yet. Click "Add Service" to list what you offer.</p>
+          } @else {
+            <div class="row g-3">
+              @for (s of services(); track s.id) {
+                <div class="col-6 col-md-4">
+                  <div class="admin-card glass-card admin-card--service">
+                    <div class="admin-card__body">
+                      <i class="admin-service__icon" [class]="s.icon"></i>
+                      <h4>{{ s.title }}</h4>
+                      <p>{{ s.description }}</p>
+                      <div class="admin-card__actions">
+                        <button (click)="openEditServiceForm(s)" aria-label="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button (click)="deleteService(s)" class="is-danger" aria-label="Delete"><i class="fa-solid fa-trash"></i></button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        } @else {
+          <div class="admin-section__header">
+            <h2>{{ editingServiceId() ? 'Edit Service' : 'Add Service' }}</h2>
+            <button class="admin-link-btn" (click)="cancelServiceForm()"><i class="fa-solid fa-xmark"></i> Cancel</button>
+          </div>
+
+          <form [formGroup]="serviceForm" (ngSubmit)="saveService()" class="row g-3 admin-form">
+            <div class="col-12">
+              <label class="form-label">Service Title *</label>
+              <input type="text" class="form-control" formControlName="title" placeholder="e.g. Structural Design" />
+            </div>
+            <div class="col-12">
+              <label class="form-label">Description *</label>
+              <textarea class="form-control" rows="3" formControlName="description"></textarea>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Icon (Font Awesome class) *</label>
+              <input type="text" class="form-control" formControlName="icon" placeholder="fa-solid fa-drafting-compass" />
+            </div>
+            <div class="col-6">
+              <label class="form-label">Display Order</label>
+              <input type="number" class="form-control" formControlName="order" min="0" />
+            </div>
+
+            <div class="col-12">
+              @if (serviceForm.value.icon) {
+                <i class="admin-service__icon-preview" [class]="serviceForm.value.icon"></i>
+                <small class="admin-upload-hint">Icon preview - browse more at fontawesome.com/icons</small>
+              }
+            </div>
+
+            <div class="col-12 col-md-6">
+              <button type="submit" class="btn-luxury btn-luxury--primary admin-form__submit" [disabled]="isSavingService()">
+                @if (isSavingService()) {
+                  <span class="spinner"></span> Saving...
+                } @else {
+                  <i class="fa-solid fa-check"></i> Save Service
+                }
+              </button>
+            </div>
+          </form>
+        }
+      </section>
+    }
+
+    <!-- ================= GALLERY TAB ================= -->
+    @if (activeTab() === 'gallery') {
+      <section class="admin-section">
+        @if (!showGalleryForm()) {
+          <div class="admin-section__header">
+            <h2>Gallery</h2>
+            <button class="btn-luxury btn-luxury--primary" (click)="openNewGalleryForm()">
+              <i class="fa-solid fa-plus"></i> Add Photo/Video
+            </button>
+          </div>
+
+          @if (isLoadingGallery()) {
+            <app-loader></app-loader>
+          } @else if (galleryItems().length === 0) {
+            <p class="admin-empty">No gallery items yet. Click "Add Photo/Video" to upload your first one.</p>
+          } @else {
+            <div class="row g-3">
+              @for (item of galleryItems(); track item.id) {
+                <div class="col-6 col-md-4 col-lg-3">
+                  <div class="admin-preview-tile admin-preview-tile--gallery">
+                    @if (item.type === 'video') {
+                      <video [src]="item.url" controls muted></video>
+                    } @else {
+                      <img [src]="item.url" [alt]="item.caption || 'Gallery item'" />
+                    }
+                    <button type="button" (click)="deleteGalleryItem(item)" aria-label="Delete"><i class="fa-solid fa-trash"></i></button>
+                  </div>
+                  @if (item.caption) {
+                    <p class="admin-gallery__caption">{{ item.caption }}</p>
+                  }
+                </div>
+              }
+            </div>
+          }
+        } @else {
+          <div class="admin-section__header">
+            <h2>Add Photo/Video</h2>
+            <button class="admin-link-btn" (click)="cancelGalleryForm()"><i class="fa-solid fa-xmark"></i> Cancel</button>
+          </div>
+
+          <form [formGroup]="galleryForm" (ngSubmit)="saveGalleryItem()" class="row g-3 admin-form">
+            <div class="col-6">
+              <label class="form-label">Type *</label>
+              <select class="form-select" formControlName="type">
+                <option value="image">Photo</option>
+                <option value="video">Video</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Caption (optional)</label>
+              <input type="text" class="form-control" formControlName="caption" />
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Upload File *</label>
+              <input
+                type="file"
+                class="form-control"
+                [accept]="galleryForm.value.type === 'video' ? 'video/*' : 'image/*'"
+                (change)="onGalleryUploadFileSelected($event)"
+              />
+              @if (isUploadingGalleryFile()) {
+                <small class="admin-upload-hint"><i class="fa-solid fa-spinner fa-spin"></i> Uploading...</small>
+              }
+            </div>
+
+            @if (galleryUploadUrl()) {
+              <div class="col-6">
+                <div class="admin-preview-tile" [class.admin-preview-tile--video]="galleryForm.value.type === 'video'">
+                  @if (galleryForm.value.type === 'video') {
+                    <video [src]="galleryUploadUrl()" controls muted></video>
+                  } @else {
+                    <img [src]="galleryUploadUrl()" alt="Preview" />
+                  }
+                </div>
+              </div>
+            }
+
+            <div class="col-12 col-md-6">
+              <button type="submit" class="btn-luxury btn-luxury--primary admin-form__submit" [disabled]="isSavingGalleryItem()">
+                @if (isSavingGalleryItem()) {
+                  <span class="spinner"></span> Saving...
+                } @else {
+                  <i class="fa-solid fa-check"></i> Add to Gallery
+                }
+              </button>
+            </div>
+          </form>
+        }
+      </section>
+    }
+
+    <!-- ================= SITE INFO TAB ================= -->
+    @if (activeTab() === 'site') {
+      <section class="admin-section">
+        <div class="admin-section__header">
+          <h2>Site Info</h2>
+        </div>
+        <p class="admin-section__hint">Everything here is admin-controlled - branding, owner bio, homepage hero text, homepage stats, contact info, and footer content.</p>
+
+        <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()" class="row g-3 admin-form">
+          <div class="col-12"><h3 class="admin-form__group-title">Branding</h3></div>
+          <div class="col-12">
+            <label class="form-label">Website Name *</label>
+            <input type="text" class="form-control" formControlName="siteName" placeholder="e.g. Ramesh Kumar Construction" />
+          </div>
+          <div class="col-6">
+            <label class="form-label">Logo</label>
+            <input type="file" class="form-control" accept="image/*" (change)="onLogoFileSelected($event)" />
+            @if (isUploadingLogo()) {
+              <small class="admin-upload-hint"><i class="fa-solid fa-spinner fa-spin"></i> Uploading...</small>
+            }
+          </div>
+          <div class="col-6">
+            @if (logoUrl()) {
+              <div class="admin-preview-tile admin-preview-tile--logo">
+                <img [src]="logoUrl()" alt="Logo preview" />
+                <button type="button" (click)="removeLogo()" aria-label="Remove"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+            } @else {
+              <p class="admin-empty admin-empty--inline">No logo uploaded</p>
+            }
+          </div>
+          <div class="col-6">
+            <label class="form-label">Favicon (tab icon)</label>
+            <input type="file" class="form-control" accept="image/*" (change)="onFaviconFileSelected($event)" />
+            @if (isUploadingFavicon()) {
+              <small class="admin-upload-hint"><i class="fa-solid fa-spinner fa-spin"></i> Uploading...</small>
+            }
+          </div>
+          <div class="col-6">
+            @if (faviconUrl()) {
+              <div class="admin-preview-tile admin-preview-tile--logo">
+                <img [src]="faviconUrl()" alt="Favicon preview" />
+                <button type="button" (click)="removeFavicon()" aria-label="Remove"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+            } @else {
+              <p class="admin-empty admin-empty--inline">Using default favicon</p>
+            }
+          </div>
+
+          <div class="col-12"><h3 class="admin-form__group-title">Owner</h3></div>
+          <div class="col-6">
+            <label class="form-label">Owner Name *</label>
+            <input type="text" class="form-control" formControlName="ownerName" />
+          </div>
+          <div class="col-6">
+            <label class="form-label">Title *</label>
+            <input type="text" class="form-control" formControlName="ownerTitle" />
+          </div>
+          <div class="col-12">
+            <label class="form-label">Bio</label>
+            <textarea class="form-control" rows="3" formControlName="bio"></textarea>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Owner Photo</label>
+            <input type="file" class="form-control" accept="image/*" (change)="onOwnerPhotoSelected($event)" />
+            @if (isUploadingOwnerPhoto()) {
+              <small class="admin-upload-hint"><i class="fa-solid fa-spinner fa-spin"></i> Uploading...</small>
+            }
+          </div>
+          <div class="col-6">
+            @if (ownerPhotoUrl()) {
+              <div class="admin-preview-tile">
+                <img [src]="ownerPhotoUrl()" alt="Owner photo preview" />
+                <button type="button" (click)="removeOwnerPhoto()" aria-label="Remove"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+            } @else {
+              <p class="admin-empty admin-empty--inline">Using default photo</p>
+            }
+          </div>
+
+          <div class="col-12"><h3 class="admin-form__group-title">Homepage Hero Text</h3></div>
+          <div class="col-12">
+            <label class="form-label">Eyebrow (small line above the title)</label>
+            <input type="text" class="form-control" formControlName="homeHeroEyebrow" placeholder="Independent Civil Engineer & Building Contractor" />
+          </div>
+          <div class="col-12">
+            <label class="form-label">Headline</label>
+            <input type="text" class="form-control" formControlName="homeHeroTitle" placeholder="We Build Dreams Into Reality" />
+          </div>
+          <div class="col-12">
+            <label class="form-label">Subheading</label>
+            <textarea class="form-control" rows="2" formControlName="homeHeroSubtitle"></textarea>
+          </div>
+
+          <div class="col-12"><h3 class="admin-form__group-title">Homepage Stats</h3></div>
+          <div class="col-6">
+            <label class="form-label">Projects Completed</label>
+            <div class="admin-input-suffix">
+              <input type="number" class="form-control" formControlName="projectsCompleted" min="0" />
+              <span>+</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Satisfied Clients</label>
+            <div class="admin-input-suffix">
+              <input type="number" class="form-control" formControlName="clientSatisfactionPercent" min="0" max="100" />
+              <span>%</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Years Experience</label>
+            <div class="admin-input-suffix">
+              <input type="number" class="form-control" formControlName="yearsExperience" min="0" />
+              <span>+</span>
+            </div>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Cities Served</label>
+            <div class="admin-input-suffix">
+              <input type="number" class="form-control" formControlName="citiesServed" min="0" />
+              <span>+</span>
+            </div>
+          </div>
+
+          <div class="col-12"><h3 class="admin-form__group-title">Contact Info</h3></div>
+          <div class="col-6">
+            <label class="form-label">Phone *</label>
+            <input type="text" class="form-control" formControlName="phone" placeholder="+91 90000 00000" />
+          </div>
+          <div class="col-6">
+            <label class="form-label">WhatsApp Number *</label>
+            <input type="text" class="form-control" formControlName="whatsapp" placeholder="919000000000" />
+          </div>
+          <div class="col-6">
+            <label class="form-label">Email *</label>
+            <input type="email" class="form-control" formControlName="email" />
+          </div>
+          <div class="col-6">
+            <label class="form-label">Address *</label>
+            <input type="text" class="form-control" formControlName="address" />
+          </div>
+
+          <div class="col-12"><h3 class="admin-form__group-title">Footer</h3></div>
+          <div class="col-12">
+            <label class="form-label">Footer Tagline</label>
+            <textarea class="form-control" rows="2" formControlName="footerTagline" placeholder="Shown under your site name in the footer"></textarea>
+          </div>
+          <div class="col-6">
+            <label class="form-label">Instagram URL</label>
+            <input type="text" class="form-control" formControlName="socialInstagram" placeholder="https://instagram.com/..." />
+          </div>
+          <div class="col-6">
+            <label class="form-label">Facebook URL</label>
+            <input type="text" class="form-control" formControlName="socialFacebook" placeholder="https://facebook.com/..." />
+          </div>
+          <div class="col-6">
+            <label class="form-label">LinkedIn URL</label>
+            <input type="text" class="form-control" formControlName="socialLinkedin" placeholder="https://linkedin.com/..." />
+          </div>
+          <div class="col-6">
+            <label class="form-label">YouTube URL</label>
+            <input type="text" class="form-control" formControlName="socialYoutube" placeholder="https://youtube.com/..." />
+          </div>
+
+          <div class="col-12 col-md-6">
+            <button type="submit" class="btn-luxury btn-luxury--primary admin-form__submit" [disabled]="isSavingSettings()">
+              @if (isSavingSettings()) {
+                <span class="spinner"></span> Saving...
+              } @else {
+                <i class="fa-solid fa-check"></i> Save Changes
+              }
+            </button>
+          </div>
+        </form>
+      </section>
+    }
+
+    <!-- ================= HERO BANNER TAB ================= -->
+    @if (activeTab() === 'hero') {
+      <section class="admin-section">
+        <div class="admin-section__header">
+          <h2>Homepage Hero Banner</h2>
+        </div>
+        <p class="admin-section__hint">Upload a video to autoplay as the homepage banner background. If no video is set, the hero image below (or the default image) is used instead. Edit the banner text in the "Site Info" tab.</p>
+
+        <div class="row g-3 admin-form">
+          <div class="col-12"><h3 class="admin-form__group-title">Banner Video</h3></div>
+          <div class="col-6">
+            <label class="form-label">Upload Video</label>
+            <input type="file" class="form-control" accept="video/*" (change)="onHeroVideoSelected($event)" />
+            @if (isUploadingHeroVideo()) {
+              <small class="admin-upload-hint"><i class="fa-solid fa-spinner fa-spin"></i> Uploading...</small>
+            }
+          </div>
+          <div class="col-6">
+            @if (heroVideoUrl()) {
+              <div class="admin-preview-tile admin-preview-tile--video">
+                <video [src]="heroVideoUrl()" controls muted></video>
+                <button type="button" (click)="removeHeroVideo()" aria-label="Remove"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+            } @else {
+              <p class="admin-empty admin-empty--inline">No video uploaded</p>
+            }
+          </div>
+
+          <div class="col-12"><h3 class="admin-form__group-title">Banner Image (fallback)</h3></div>
+          <div class="col-6">
+            <label class="form-label">Upload Image</label>
+            <input type="file" class="form-control" accept="image/*" (change)="onHeroImageSelected($event)" />
+            @if (isUploadingHeroImage()) {
+              <small class="admin-upload-hint"><i class="fa-solid fa-spinner fa-spin"></i> Uploading...</small>
+            }
+          </div>
+          <div class="col-6">
+            @if (heroImageUrl()) {
+              <div class="admin-preview-tile">
+                <img [src]="heroImageUrl()" alt="Hero preview" />
+                <button type="button" (click)="removeHeroImage()" aria-label="Remove"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+            } @else {
+              <p class="admin-empty admin-empty--inline">Using default image</p>
+            }
+          </div>
+
+          <div class="col-12 col-md-6">
+            <button type="button" class="btn-luxury btn-luxury--primary admin-form__submit" (click)="saveHeroMedia()" [disabled]="isSavingHero()">
+              @if (isSavingHero()) {
+                <span class="spinner"></span> Saving...
+              } @else {
+                <i class="fa-solid fa-check"></i> Save Banner
+              }
+            </button>
+          </div>
+        </div>
+      </section>
+    }
+  </main>
+</div>

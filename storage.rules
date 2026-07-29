@@ -1,0 +1,26 @@
+rules_version = '2';
+
+// Project images/videos, owner photo, and certificates are publicly
+// readable (needed for the gallery/portfolio to render for visitors).
+// All uploads/deletes are blocked from the client - manage media through
+// the Firebase console or the Storage tab in the Firebase dashboard.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /projects/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /gallery/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /owner/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /certificates/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

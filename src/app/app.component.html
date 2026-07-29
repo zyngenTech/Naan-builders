@@ -1,0 +1,16 @@
+@if (!isAdminRoute()) {
+  <app-navbar></app-navbar>
+}
+
+<main>
+  <router-outlet></router-outlet>
+</main>
+
+@if (!isAdminRoute()) {
+  <app-footer></app-footer>
+
+  <!-- Global overlays: floating WhatsApp/Call buttons, scroll-to-top, toast notifications -->
+  <app-floating-buttons></app-floating-buttons>
+  <app-scroll-top></app-scroll-top>
+}
+<app-toast></app-toast>

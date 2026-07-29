@@ -1,0 +1,63 @@
+<app-hero
+  backgroundImage="assets/images/hero-testimonials.jpg"
+  eyebrow="Client Stories"
+  title="Homes Built, Trust Earned"
+  [compact]="true"
+></app-hero>
+
+<section class="section">
+  <div class="container-xl">
+    @if (isLoading()) {
+      <app-loader label="Loading testimonials..."></app-loader>
+    } @else if (testimonials().length === 0) {
+      <p class="empty-state">Testimonials will appear here - add documents to the "testimonials" Firestore collection.</p>
+    } @else {
+      <!-- Auto-advancing featured slider -->
+      <div class="slider">
+        <div class="slider__track" [style.transform]="'translateX(-' + (activeSlide() * 100) + '%)'">
+          @for (t of testimonials(); track t.id) {
+            <div class="slider__slide">
+              <div class="slider__quote glass-card">
+                <i class="fa-solid fa-quote-left"></i>
+                <p>{{ t.feedback }}</p>
+                <div class="slider__stars">
+                  @for (star of stars; track star) {
+                    <i class="fa-solid fa-star" [class.is-dim]="star > t.rating"></i>
+                  }
+                </div>
+                <strong>{{ t.customerName }}</strong>
+                @if (t.location) { <span>{{ t.location }}</span> }
+              </div>
+            </div>
+          }
+        </div>
+        <div class="slider__dots">
+          @for (t of testimonials(); track t.id; let i = $index) {
+            <button class="slider__dot" [class.slider__dot--active]="activeSlide() === i" (click)="goToSlide(i)" [attr.aria-label]="'Go to testimonial ' + (i+1)"></button>
+          }
+        </div>
+      </div>
+
+      <!-- Full grid -->
+      <div class="testimonials-grid">
+        @for (t of testimonials(); track t.id) {
+          <div class="testimonial-card glass-card">
+            <div class="testimonial-card__stars">
+              @for (star of stars; track star) {
+                <i class="fa-solid fa-star" [class.is-dim]="star > t.rating"></i>
+              }
+            </div>
+            <p>{{ t.feedback }}</p>
+            <div class="testimonial-card__author">
+              @if (t.photoUrl) { <img [src]="t.photoUrl" [alt]="t.customerName" /> }
+              <div>
+                <strong>{{ t.customerName }}</strong>
+                @if (t.location) { <span>{{ t.location }}</span> }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>

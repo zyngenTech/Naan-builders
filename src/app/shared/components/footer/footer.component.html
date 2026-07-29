@@ -1,0 +1,59 @@
+<footer class="footer">
+  <div class="container-xl footer__grid">
+    <div class="footer__brand">
+      <h3>
+        @if (contact()?.logoUrl) {
+          <img [src]="contact()!.logoUrl" alt="" class="footer__logo" />
+        } @else {
+          <i class="fa-solid fa-building-columns"></i>
+        }
+        {{ contact()?.siteName || 'Ramesh Kumar' }}
+      </h3>
+      <p>{{ contact()?.footerTagline || 'Independent civil engineer & building contractor turning blueprints into homes people love, one foundation at a time.' }}</p>
+      <div class="footer__social">
+        @if (contact()?.socialInstagram) {
+          <a [href]="contact()!.socialInstagram" target="_blank" rel="noopener" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+        }
+        @if (contact()?.socialFacebook) {
+          <a [href]="contact()!.socialFacebook" target="_blank" rel="noopener" aria-label="Facebook"><i class="fa-brands fa-facebook"></i></a>
+        }
+        @if (contact()?.socialLinkedin) {
+          <a [href]="contact()!.socialLinkedin" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
+        }
+        @if (contact()?.socialYoutube) {
+          <a [href]="contact()!.socialYoutube" target="_blank" rel="noopener" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+        }
+      </div>
+    </div>
+
+    <div class="footer__links">
+      <h4>Explore</h4>
+      <a routerLink="/about">About Engineer</a>
+      <a routerLink="/services">Services</a>
+      <a routerLink="/projects">Completed Projects</a>
+      <a routerLink="/gallery">Gallery</a>
+      <a routerLink="/testimonials">Testimonials</a>
+    </div>
+
+    <div class="footer__links">
+      <h4>Services</h4>
+      <a routerLink="/services">House Construction</a>
+      <a routerLink="/services">Structural Design</a>
+      <a routerLink="/services">Renovation</a>
+      <a routerLink="/services">Construction Supervision</a>
+    </div>
+
+    <div class="footer__contact">
+      <h4>Get in Touch</h4>
+      <p><i class="fa-solid fa-phone"></i> {{ contact()?.phone }}</p>
+      <p><i class="fa-solid fa-envelope"></i> {{ contact()?.email }}</p>
+      <p><i class="fa-solid fa-location-dot"></i> {{ contact()?.address }}</p>
+      <a routerLink="/contact" class="btn-luxury btn-luxury--outline">Request a Quote</a>
+    </div>
+  </div>
+
+  <div class="footer__bottom container-xl">
+    <p>&copy; {{ year }} {{ contact()?.siteName || 'Ramesh Kumar' }} Construction. All rights reserved.</p>
+    <p>Crafted with precision &amp; passion.</p>
+  </div>
+</footer>

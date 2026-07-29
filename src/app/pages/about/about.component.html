@@ -1,0 +1,77 @@
+<app-hero
+  backgroundImage="assets/images/hero-about.jpg"
+  eyebrow="About the Engineer"
+  title="Engineering Trust, One Home at a Time"
+  [compact]="true"
+></app-hero>
+
+<section class="section">
+  <div class="container-xl about-intro">
+    <div class="about-intro__photo glass-card">
+      <img [src]="settings()?.ownerPhoto || 'assets/images/owner-photo.jpg'" alt="Portrait of the civil engineer" />
+    </div>
+
+    @if (isLoading()) {
+      <app-loader label="Loading profile..." [fullHeight]="false"></app-loader>
+    } @else {
+      <div class="about-intro__content">
+        <span class="section-title__eyebrow">{{ settings()?.ownerTitle || fallbackTitle }}</span>
+        <h2>{{ settings()?.ownerName || fallbackName }}</h2>
+        <p>{{ settings()?.bio || fallbackBio }}</p>
+
+        <div class="about-intro__stats">
+          <div><strong>{{ settings()?.yearsExperience || fallbackYears }}+</strong><span>Years Experience</span></div>
+          <div><strong>{{ settings()?.projectsCompleted || fallbackProjects }}+</strong><span>Homes Built</span></div>
+          <div><strong>{{ settings()?.clientSatisfactionPercent || fallbackSatisfaction }}%</strong><span>Client Satisfaction</span></div>
+        </div>
+      </div>
+    }
+  </div>
+</section>
+
+<section class="section section--alt">
+  <div class="container-xl vision-mission">
+    <div class="vision-mission__card glass-card">
+      <i class="fa-solid fa-eye"></i>
+      <h3>Vision</h3>
+      <p>To be the most trusted name in independent residential construction - known for craftsmanship, honesty, and homes that last generations.</p>
+    </div>
+    <div class="vision-mission__card glass-card">
+      <i class="fa-solid fa-bullseye"></i>
+      <h3>Mission</h3>
+      <p>Deliver every project on time, within budget, and to a standard of quality that speaks for itself - with clear communication at every step.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container-xl">
+    <app-section-title eyebrow="Journey" title="Milestones Over the Years"></app-section-title>
+    <div class="about-timeline">
+      @for (item of timeline; track item.year) {
+        <div class="about-timeline__item">
+          <div class="about-timeline__year">{{ item.year }}</div>
+          <div class="about-timeline__content glass-card">
+            <h4>{{ item.title }}</h4>
+            <p>{{ item.desc }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+@if (settings()?.certificates?.length) {
+  <section class="section section--alt">
+    <div class="container-xl">
+      <app-section-title eyebrow="Credentials" title="Certificates & Licenses"></app-section-title>
+      <div class="certificates-grid">
+        @for (cert of settings()?.certificates; track cert) {
+          <div class="glass-card certificate-card">
+            <img [src]="cert" alt="Certificate" />
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}

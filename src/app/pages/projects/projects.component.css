@@ -1,0 +1,28 @@
+.filter-bar { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-bottom: var(--space-lg); }
+.filter-chip {
+  padding: 0.55rem 1.3rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+.filter-chip:hover { border-color: var(--color-gold); color: var(--color-text); }
+.filter-chip--active { background: var(--color-gold); color: #1a1508; border-color: var(--color-gold); font-weight: 600; }
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+}
+
+.empty-state { text-align: center; color: var(--color-text-muted); padding: var(--space-lg) 0; }
+
+@media (max-width: 991px) {
+  .projects-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 575px) {
+  .projects-grid { grid-template-columns: 1fr; }
+}

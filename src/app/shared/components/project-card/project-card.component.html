@@ -1,0 +1,14 @@
+<a [routerLink]="['/projects', project.id]" class="project-card glass-card">
+  <div class="project-card__image">
+    <img [src]="project.coverImage" [alt]="project.title" loading="lazy" />
+    <span class="project-card__year">{{ completedYear }}</span>
+    <div class="project-card__overlay">
+      <span class="btn-luxury btn-luxury--primary">View Details <i class="fa-solid fa-arrow-right"></i></span>
+    </div>
+  </div>
+  <div class="project-card__body">
+    <h3>{{ project.title }}</h3>
+    <p class="project-card__location"><i class="fa-solid fa-location-dot"></i> {{ project.location }}</p>
+    <p class="project-card__desc">{{ project.description }}</p>
+  </div>
+</a>
