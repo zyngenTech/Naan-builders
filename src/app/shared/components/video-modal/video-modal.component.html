@@ -1,0 +1,13 @@
+<div class="video-modal" (click)="close()">
+  <button class="video-modal__close" (click)="close(); $event.stopPropagation()" aria-label="Close video">
+    <i class="fa-solid fa-xmark"></i>
+  </button>
+
+  <div class="video-modal__frame" (click)="$event.stopPropagation()">
+    @if (isEmbed) {
+      <iframe [src]="safeUrl" title="Project video" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    } @else {
+      <video [src]="safeUrl" controls autoplay></video>
+    }
+  </div>
+</div>

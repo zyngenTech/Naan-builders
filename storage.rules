@@ -1,0 +1,30 @@
+rules_version = '2';
+
+// Project images/videos, owner photo, certificates, and the homepage hero
+// banner are publicly readable (needed for the site to render for
+// visitors). Uploads/deletes require the signed-in admin account - i.e.
+// only the Admin dashboard can add or remove media.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /projects/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /gallery/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /owner/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /certificates/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /hero/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}

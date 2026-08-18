@@ -1,0 +1,103 @@
+rules_version = '2';
+
+// Public read-only content (projects, gallery, services, testimonials,
+// settings) is visible to every visitor with no login required. Writes to
+// those collections are only allowed for the signed-in admin account
+// (request.auth != null) - i.e. only the Admin dashboard, after logging
+// in at /admin/login, can create/update/delete them.
+//
+// The "inquiries" collection is the opposite: any visitor can CREATE a new
+// inquiry (the public contact form), but only the admin can read, update,
+// or delete inquiries - so nobody can browse other customers' submissions.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /projects/{projectId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /gallery/{itemId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /videos/{videoId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /testimonials/{testimonialId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /milestones/{milestoneId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // The public contact form is the only unauthenticated WRITE path in
+    // this project, so it is validated field by field rather than just
+    // checked for presence.
+    //
+    // hasOnly() is the important half: the previous rule used hasAll(),
+    // which only asserts those keys EXIST. Any client holding the (public,
+    // bundled) Firebase config could therefore create inquiry documents
+    // carrying unlimited extra fields of unlimited size - an open, billed
+    // write endpoint into Firestore. hasOnly() pins the document to
+    // exactly the nine fields ContactComponent submits, and the size
+    // caps below mirror the form's own Validators so a scripted client
+    // cannot write more than the UI could.
+    //
+    // status is pinned to 'new' on create so a submitter cannot file an
+    // inquiry that is already marked contacted/closed and slip past the
+    // Admin dashboard's "new" badge. The admin still moves it through
+    // 'contacted'/'closed' via the update rule below.
+    //
+    // NOTE: these caps mirror ContactComponent's inquiryForm. If a field
+    // is added, removed, or its validator relaxed there, update this rule
+    // in the same change or valid submissions will be rejected.
+    match /inquiries/{inquiryId} {
+      allow create: if request.resource.data.keys().hasOnly(
+                         ['name', 'phone', 'email', 'location',
+                          'projectType', 'budget', 'message',
+                          'status', 'createdDate'])
+                    && request.resource.data.keys().hasAll(
+                         ['name', 'phone', 'email', 'location',
+                          'projectType', 'budget', 'message',
+                          'status', 'createdDate'])
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() >= 2
+                    && request.resource.data.name.size() <= 60
+                    && request.resource.data.phone is string
+                    && request.resource.data.phone.size() >= 10
+                    && request.resource.data.phone.size() <= 15
+                    && request.resource.data.email is string
+                    && request.resource.data.email.size() <= 254
+                    && request.resource.data.location is string
+                    && request.resource.data.location.size() <= 100
+                    && request.resource.data.projectType is string
+                    && request.resource.data.projectType.size() <= 60
+                    && request.resource.data.budget is string
+                    && request.resource.data.budget.size() <= 60
+                    && request.resource.data.message is string
+                    && request.resource.data.message.size() >= 10
+                    && request.resource.data.message.size() <= 600
+                    && request.resource.data.status == 'new'
+                    && request.resource.data.createdDate is string
+                    && request.resource.data.createdDate.size() <= 40;
+      allow read, update, delete: if request.auth != null;
+    }
+  }
+}

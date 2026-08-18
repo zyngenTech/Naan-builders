@@ -1,0 +1,68 @@
+.admin-multi-upload__label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--color-text-muted); }
+.admin-multi-upload__hint { display: block; font-size: 0.72rem; color: var(--color-text-muted); opacity: 0.75; margin: -0.3rem 0 0.6rem; }
+
+.admin-multi-upload__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.7rem;
+  margin-bottom: 0.6rem;
+}
+
+.admin-multi-upload__item { position: relative; aspect-ratio: 1; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--color-border); }
+.admin-multi-upload__item img, .admin-multi-upload__item video { width: 100%; height: 100%; object-fit: cover; }
+.admin-multi-upload__play {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(10,11,13,0.35); color: #fff; font-size: 1.4rem; pointer-events: none;
+}
+.admin-multi-upload__error {
+  width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+  color: var(--color-error); font-size: 1.2rem; background: rgba(224,90,90,0.08);
+}
+.admin-multi-upload__item button {
+  position: absolute; top: 0.3rem; right: 0.3rem;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: rgba(10,11,13,0.8); border: none; color: #fff; cursor: pointer; font-size: 0.7rem;
+}
+/* Invisible hit-area expansion so the small delete badge stays a
+   touch-friendly target without growing visually on the thumbnail. */
+.admin-multi-upload__item button::before {
+  content: '';
+  position: absolute;
+  inset: -10px;
+}
+
+.admin-multi-upload__add {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  border: 1.5px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  transition: all var(--transition-base);
+}
+.admin-multi-upload__add:hover { border-color: var(--color-gold); color: var(--color-gold-light); }
+.admin-multi-upload__add i { font-size: 1.2rem; color: var(--color-gold); }
+
+.admin-multi-upload__url-toggle button {
+  display: flex; align-items: center; gap: 0.4rem;
+  background: transparent; border: none; color: var(--color-text-muted);
+  font-size: 0.78rem; cursor: pointer; padding: 0.3rem 0;
+}
+.admin-multi-upload__url-toggle button:hover { color: var(--color-gold-light); }
+
+.admin-multi-upload__url-row { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+.admin-multi-upload__url-row input {
+  flex: 1; padding: 0.7rem 0.85rem; background: rgba(255,255,255,0.04);
+  border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+  color: var(--color-text); font-size: 0.85rem;
+}
+.admin-multi-upload__url-row input:focus { outline: none; border-color: var(--color-gold); }
+
+@media (max-width: 575px) {
+  .admin-multi-upload__grid { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+}

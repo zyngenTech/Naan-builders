@@ -1,0 +1,191 @@
+.hero {
+  position: relative;
+  min-height: 92vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+.hero--compact { min-height: 46vh; }
+
+.hero__image {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+}
+.hero__video {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+/* Pure CSS black/gold "design" fallback - no image file involved at all.
+   Shown whenever no real banner image/video is set (or one fails to load). */
+.hero__design {
+  position: absolute; inset: 0;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 78% 20%, rgba(201,162,103,0.22), transparent 55%),
+    radial-gradient(circle at 15% 85%, rgba(201,162,103,0.10), transparent 50%),
+    linear-gradient(160deg, #14171c 0%, #0d0f12 55%, #08090a 100%);
+}
+.hero__design-icon {
+  width: 110px; height: 110px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(201,162,103,0.35);
+  background: rgba(201,162,103,0.06);
+  color: var(--color-gold);
+  font-size: 2.6rem;
+  opacity: 0.55;
+}
+
+/* Glassy gold/black tint filter over whatever is in the base layer (real
+   photo, video, or the CSS design) - a frosted dark-gold wash so text
+   always stays readable and every banner feels consistently premium and
+   on-brand, no matter how bright or busy the uploaded photo is. */
+.hero__tint {
+  position: absolute; inset: 0;
+  z-index: 2;
+  background:
+    radial-gradient(130% 95% at 50% 100%, rgba(5,6,7,0.85) 0%, transparent 62%),
+    linear-gradient(180deg, rgba(8,9,10,0.58) 0%, rgba(9,9,11,0.66) 40%, rgba(6,7,8,0.95) 100%),
+    linear-gradient(105deg, rgba(201,162,103,0.26) 0%, rgba(201,162,103,0.08) 34%, transparent 60%);
+  backdrop-filter: blur(1.5px) saturate(1.15);
+  -webkit-backdrop-filter: blur(1.5px) saturate(1.15);
+  box-shadow: inset 0 -70px 100px -20px rgba(0,0,0,0.6);
+}
+
+.hero__overlay-pattern {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: radial-gradient(circle at 85% 15%, rgba(201,162,103,0.14), transparent 55%);
+  pointer-events: none;
+}
+
+/* Content is vertically centered via flex, not asymmetric padding, so it
+   sits in the same visual middle regardless of viewport height - and a
+   small top/bottom safety gap keeps it clear of the navbar and any
+   floating buttons at every screen size. */
+.hero__content {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 6.5rem 0 3rem;
+  font-feature-settings: "liga" 1, "kern" 1;
+  text-rendering: optimizeLegibility;
+}
+.hero__content-inner { width: 100%; }
+
+.hero__eyebrow {
+  display: inline-block;
+  padding: 0.4rem 1.1rem;
+  border: 1px solid rgba(201,162,103,0.45);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-gold-light);
+  background: rgba(201,162,103,0.1);
+  margin-bottom: 1.5rem;
+}
+
+.hero__title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(2.2rem, 5.5vw, 4.6rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: #fff;
+  margin-bottom: 1.2rem;
+  text-shadow: 0 0 34px rgba(201,162,103,0.45), 0 2px 20px rgba(0,0,0,0.65);
+}
+
+.hero__subtitle {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  line-height: 1.6;
+  color: rgba(244,243,239,0.92);
+  max-width: 560px;
+  margin-bottom: 2.2rem;
+  text-shadow: 0 1px 12px rgba(0,0,0,0.5);
+}
+
+.hero__actions { display: flex; gap: 1.1rem; flex-wrap: wrap; align-items: center; }
+
+.hero__scroll-cue {
+  position: absolute;
+  bottom: 1.6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 2;
+}
+.hero__scroll-cue span {
+  width: 1px; height: 36px;
+  background: linear-gradient(180deg, var(--color-gold), transparent);
+  animation: scrollPulse 1.8s ease-in-out infinite;
+}
+.hero__scroll-cue small { color: var(--color-text-muted); font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; }
+@keyframes scrollPulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+/* ===== MOBILE ===== */
+@media (max-width: 767px) {
+  .hero { min-height: 100svh; }
+  .hero--compact { min-height: 55vh; }
+  .hero__content { padding: 5.5rem var(--space-sm) 2.5rem; text-align: center; }
+
+  /* A frosted glass panel behind the text - keeps everything centered,
+     properly padded, and clearly legible regardless of what part of the
+     photo sits behind it (sky, roofline, anything busy/bright). This is
+     the "glassy black and gold" look, and it doubles as the highlight
+     the text needed to really stand out on a phone screen. */
+  .hero__content-inner {
+   
+    padding: 2rem 1.3rem 2.2rem;
+ 
+  }
+
+  .hero__design-icon { width: 84px; height: 84px; font-size: 2rem; }
+  .hero__eyebrow { font-size: 0.68rem; padding: 0.4rem 0.9rem; }
+  .hero__title { margin-bottom: 1rem; }
+  .hero__subtitle { margin: 0 auto 1.8rem; }
+
+  .hero__actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+    margin-top: 0.4rem;
+  }
+  .hero__actions .btn-luxury {
+    justify-content: center;
+    width: 100%;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  /* Hidden on mobile: with a fixed WhatsApp/Call button stack already
+     anchored bottom-left, the scroll cue has no room to sit cleanly and
+     was overlapping the CTA buttons - see hero__content bottom padding
+     above, which now reserves enough space regardless. */
+  .hero__scroll-cue { display: none; }
+}
+
+@media (max-width: 380px) {
+  .hero__title { font-size: 2rem; }
+  .hero__subtitle { font-size: 0.95rem; }
+}

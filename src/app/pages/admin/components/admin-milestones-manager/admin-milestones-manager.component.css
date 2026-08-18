@@ -1,0 +1,10 @@
+.admin-manager-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.2rem; }
+
+.admin-list-item--milestone { grid-template-columns: 56px 1fr auto; }
+.admin-list-item__year {
+  width: 56px; height: 56px; border-radius: var(--radius-sm);
+  background: rgba(201,162,103,0.1); display: flex; align-items: center; justify-content: center;
+  color: var(--color-gold); font-weight: 700; font-size: 0.85rem; text-align: center;
+}
+
+form .admin-btn--full { margin-top: 1.2rem; }

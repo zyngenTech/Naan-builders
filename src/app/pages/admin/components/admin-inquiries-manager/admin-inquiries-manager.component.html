@@ -1,0 +1,73 @@
+<div class="admin-card">
+  <div class="admin-manager-header">
+    <div>
+      <h2>Customer Inquiries</h2>
+      <p class="admin-card__subtitle">
+        {{ inquiries().length }} total
+        @if (newCount() > 0) { &middot; <span class="new-badge">{{ newCount() }} new</span> }
+      </p>
+    </div>
+  </div>
+
+  <div class="inquiry-filter-bar">
+    @for (status of statusOptions; track status) {
+      <button
+        class="inquiry-filter-chip"
+        [class.inquiry-filter-chip--active]="activeFilter() === status"
+        (click)="setFilter(status)"
+      >
+        {{ status === 'all' ? 'All' : status }}
+      </button>
+    }
+  </div>
+
+  @if (isLoading()) {
+    <div class="admin-empty"><span class="admin-spinner"></span> Loading inquiries...</div>
+  } @else if (filteredInquiries().length === 0) {
+    <div class="admin-empty">No inquiries here yet - they'll appear as soon as a visitor submits the Contact form.</div>
+  } @else {
+    <div class="inquiry-list">
+      @for (inquiry of filteredInquiries(); track inquiry.id) {
+        <div class="inquiry-card" [class.inquiry-card--expanded]="expandedId() === inquiry.id" (click)="toggleExpanded(inquiry.id)">
+          <div class="inquiry-card__summary">
+            <div class="inquiry-card__main">
+              <strong>{{ inquiry.name }}</strong>
+              <span class="inquiry-card__meta">{{ inquiry.projectType }} &middot; {{ inquiry.createdDate | date: 'MMM d, y, h:mm a' }}</span>
+            </div>
+            <span class="status-badge" [class]="'status-badge--' + inquiry.status">{{ inquiry.status }}</span>
+          </div>
+
+          @if (expandedId() === inquiry.id) {
+            <div class="inquiry-card__details" (click)="$event.stopPropagation()">
+              <div class="inquiry-detail-grid">
+                <div class="inquiry-detail"><label>Phone</label><span>{{ inquiry.phone }}</span></div>
+                <div class="inquiry-detail"><label>Email</label><span>{{ inquiry.email }}</span></div>
+                <div class="inquiry-detail"><label>Location</label><span>{{ inquiry.location }}</span></div>
+                <div class="inquiry-detail"><label>Budget</label><span>{{ inquiry.budget }}</span></div>
+                <div class="inquiry-detail inquiry-detail--full"><label>Message</label><span>{{ inquiry.message }}</span></div>
+              </div>
+
+              <div class="inquiry-card__actions">
+                <a [href]="whatsappReplyUrl(inquiry)" target="_blank" rel="noopener" class="admin-btn admin-btn--primary admin-btn--sm" (click)="$event.stopPropagation()">
+                  <i class="fa-brands fa-whatsapp"></i> Reply on WhatsApp
+                </a>
+                <a [href]="'tel:' + inquiry.phone" class="admin-btn admin-btn--outline admin-btn--sm">
+                  <i class="fa-solid fa-phone"></i> Call
+                </a>
+                @if (inquiry.status !== 'contacted') {
+                  <button class="admin-btn admin-btn--outline admin-btn--sm" (click)="setStatus(inquiry, 'contacted', $event)">Mark Contacted</button>
+                }
+                @if (inquiry.status !== 'closed') {
+                  <button class="admin-btn admin-btn--outline admin-btn--sm" (click)="setStatus(inquiry, 'closed', $event)">Mark Closed</button>
+                }
+                <button class="admin-btn admin-btn--danger admin-btn--sm" (click)="deleteInquiry(inquiry, $event)">
+                  <i class="fa-solid fa-trash"></i> Delete
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

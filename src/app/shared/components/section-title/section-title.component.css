@@ -1,0 +1,14 @@
+.section-title { max-width: 640px; margin: 0 auto var(--space-lg); text-align: center; }
+.section-title--left { margin-left: 0; margin-right: 0; text-align: left; }
+
+.section-title__eyebrow {
+  display: inline-block;
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  margin-bottom: 0.8rem;
+  font-weight: 600;
+}
+.section-title__title { font-size: clamp(1.8rem, 3.2vw, 2.6rem); margin-bottom: 0.7rem; }
+.section-title__subtitle { font-size: 1rem; margin-bottom: 0; }

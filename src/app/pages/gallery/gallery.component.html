@@ -1,0 +1,49 @@
+<app-hero
+  [backgroundImage]="settings()?.heroImageGallery"
+  eyebrow="Visual Showcase"
+  title="Every Brick, Every Detail"
+  [compact]="true"
+></app-hero>
+
+<section class="section">
+  <div class="container-xl">
+    <div class="filter-bar">
+      <button class="filter-chip" [class.filter-chip--active]="activeType() === 'all'" (click)="setFilter('all')">All</button>
+      <button class="filter-chip" [class.filter-chip--active]="activeType() === 'image'" (click)="setFilter('image')">Photos</button>
+      <button class="filter-chip" [class.filter-chip--active]="activeType() === 'video'" (click)="setFilter('video')">Videos</button>
+    </div>
+
+    @if (isLoading()) {
+      <app-loader label="Loading gallery..."></app-loader>
+    } @else if (filteredItems().length === 0) {
+      <p class="empty-state">Gallery items will appear here - add documents to the "gallery" Firestore collection.</p>
+    } @else {
+      <div class="masonry">
+        @for (item of filteredItems(); track item.id) {
+          <button class="masonry__item" (click)="openItem(item)">
+            <img [src]="(item.thumbnailUrl || item.url) | cldOptimize:'thumbnail'" [alt]="item.caption || 'Gallery item'" loading="lazy" decoding="async" appImgFallback />
+            @if (item.type === 'video') {
+              <span class="masonry__play"><i class="fa-solid fa-circle-play"></i></span>
+            }
+            @if (item.caption) {
+              <span class="masonry__caption">{{ item.caption }}</span>
+            }
+          </button>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+@if (lightboxOpen()) {
+  <app-image-modal
+    [images]="imageUrls()"
+    [activeIndex]="lightboxIndex()"
+    (closed)="closeLightbox()"
+    (indexChange)="lightboxIndex.set($event)"
+  ></app-image-modal>
+}
+
+@if (activeVideoUrl()) {
+  <app-video-modal [videoUrl]="activeVideoUrl()!" (closed)="closeVideo()"></app-video-modal>
+}

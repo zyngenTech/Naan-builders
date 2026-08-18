@@ -1,0 +1,4 @@
+.admin-manager-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.2rem; }
+.admin-list-item__thumb--placeholder { display: flex; align-items: center; justify-content: center; color: var(--color-text-muted); }
+.admin-list-item__body strong i { color: var(--color-gold); font-size: 0.75rem; margin-left: 0.3rem; }
+form .admin-btn--full { margin-top: 1.2rem; }

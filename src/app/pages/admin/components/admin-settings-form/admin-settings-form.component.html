@@ -1,0 +1,221 @@
+@if (isLoading()) {
+  <div class="admin-empty"><span class="admin-spinner"></span> Loading settings...</div>
+} @else {
+  <form [formGroup]="settingsForm" (ngSubmit)="onSubmit()" novalidate>
+
+    <!-- COMPANY IDENTITY -->
+    <div class="admin-card">
+      <h2>Company Identity</h2>
+      <p class="admin-card__subtitle">Shown in the Navbar, Footer, browser tab, and Admin login.</p>
+
+      <div class="admin-form-grid">
+        <div class="admin-form-grid__full admin-field">
+          <label for="companyName">Company Name *</label>
+          <input id="companyName" type="text" formControlName="companyName" placeholder="e.g. NaanBuilders" [class.is-invalid]="f.companyName.invalid && f.companyName.touched" />
+          @if (f.companyName.invalid && f.companyName.touched) {
+            <small class="error-text">Company name is required.</small>
+          }
+        </div>
+
+        <div class="admin-form-grid__full">
+          <app-admin-upload
+            label="Logo (optional - shown as a circle next to the company name)"
+            accept="image"
+            folder="branding/logo"
+            aspectRatio="1 / 1"
+            sizeHint="500 x 500px, square, subject centered (it's cropped into a circle)"
+            [currentUrl]="logoUrl()"
+            (uploaded)="onLogoUploaded($event)"
+            (removed)="onLogoRemoved()"
+          ></app-admin-upload>
+        </div>
+
+        <div class="admin-form-grid__full">
+          <app-admin-upload
+            label="Favicon (optional - browser tab icon)"
+            accept="image"
+            folder="branding/favicon"
+            aspectRatio="1 / 1"
+            sizeHint="512 x 512px, square PNG"
+            [currentUrl]="faviconUrl()"
+            (uploaded)="onFaviconUploaded($event)"
+            (removed)="onFaviconRemoved()"
+          ></app-admin-upload>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOME BANNER -->
+    <div class="admin-card">
+      <h2>Home Banner</h2>
+      <p class="admin-card__subtitle">Upload a video for an animated banner, or fall back to a static image. Video takes priority if both are set.</p>
+
+      <div class="admin-form-grid">
+        <div class="admin-form-grid__full">
+          <app-admin-upload
+            label="Banner Video (optional, autoplays muted)"
+            accept="video"
+            folder="hero"
+            aspectRatio="16 / 9"
+            sizeHint="1920 x 1080px (16:9), MP4, under 100MB"
+            [currentUrl]="heroVideoUrl()"
+            (uploaded)="onHeroVideoUploaded($event)"
+            (removed)="onHeroVideoRemoved()"
+          ></app-admin-upload>
+        </div>
+        <div class="admin-form-grid__full">
+          <app-admin-upload
+            label="Banner Image (fallback / poster)"
+            accept="image"
+            folder="hero"
+            aspectRatio="16 / 9"
+            sizeHint="1600 x 900px (16:9)"
+            [currentUrl]="heroImageUrl()"
+            (uploaded)="onHeroImageUploaded($event)"
+            (removed)="onHeroImageRemoved()"
+          ></app-admin-upload>
+        </div>
+      </div>
+    </div>
+
+    <!-- OTHER PAGE BANNERS -->
+    <div class="admin-card">
+      <h2>Other Page Banners</h2>
+      <p class="admin-card__subtitle">Header image shown at the top of each of these pages. Falls back to a default if left empty.</p>
+
+      <div class="admin-form-grid">
+        @for (banner of pageBanners; track banner.key) {
+          <div class="admin-form-grid__full">
+            <app-admin-upload
+              [label]="banner.label"
+              accept="image"
+              [folder]="'hero/' + banner.key"
+              aspectRatio="16 / 9"
+              sizeHint="1600 x 900px (16:9)"
+              [currentUrl]="pageBannerUrls()[banner.key]"
+              (uploaded)="onPageBannerUploaded(banner.key, $event)"
+              (removed)="onPageBannerRemoved(banner.key)"
+            ></app-admin-upload>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- STATS STRIP -->
+    <div class="admin-card">
+      <h2>Home Stats Strip</h2>
+      <p class="admin-card__subtitle">These four numbers appear on the homepage with a count-up animation.</p>
+
+      <div class="admin-form-grid">
+        <div class="admin-field">
+          <label for="projectsCompleted">Projects Completed</label>
+          <input id="projectsCompleted" type="number" formControlName="projectsCompleted" />
+        </div>
+        <div class="admin-field">
+          <label for="clientSatisfactionPercent">Satisfied Clients (%)</label>
+          <input id="clientSatisfactionPercent" type="number" formControlName="clientSatisfactionPercent" />
+        </div>
+        <div class="admin-field">
+          <label for="yearsExperience">Years Experience</label>
+          <input id="yearsExperience" type="number" formControlName="yearsExperience" />
+        </div>
+        <div class="admin-field">
+          <label for="citiesServed">Cities Served</label>
+          <input id="citiesServed" type="number" formControlName="citiesServed" />
+        </div>
+      </div>
+    </div>
+
+    <!-- OWNER PROFILE -->
+    <div class="admin-card">
+      <h2>Owner Profile</h2>
+      <p class="admin-card__subtitle">Shown on the About page.</p>
+
+      <div class="admin-form-grid">
+        <div class="admin-field">
+          <label for="ownerName">Full Name</label>
+          <input id="ownerName" type="text" formControlName="ownerName" [class.is-invalid]="f.ownerName.invalid && f.ownerName.touched" />
+        </div>
+        <div class="admin-field">
+          <label for="ownerTitle">Title</label>
+          <input id="ownerTitle" type="text" formControlName="ownerTitle" [class.is-invalid]="f.ownerTitle.invalid && f.ownerTitle.touched" />
+        </div>
+        <div class="admin-form-grid__full admin-field">
+          <label for="bio">Bio</label>
+          <textarea id="bio" rows="3" formControlName="bio" [class.is-invalid]="f.bio.invalid && f.bio.touched"></textarea>
+        </div>
+        <div class="admin-form-grid__full">
+          <app-admin-upload
+            label="Owner Photo"
+            accept="image"
+            folder="owner"
+            aspectRatio="3 / 4"
+            sizeHint="900 x 1200px (3:4 portrait)"
+            [currentUrl]="ownerPhotoUrl()"
+            (uploaded)="onOwnerPhotoUploaded($event)"
+            (removed)="onOwnerPhotoRemoved()"
+          ></app-admin-upload>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACT INFO -->
+    <div class="admin-card">
+      <h2>Contact Information</h2>
+      <p class="admin-card__subtitle">Used across the Navbar, Footer, floating buttons, and Contact page.</p>
+
+      <div class="admin-form-grid">
+        <div class="admin-field">
+          <label for="phone">Phone</label>
+          <input id="phone" type="text" formControlName="phone" placeholder="+91 90000 00000" [class.is-invalid]="f.phone.invalid && f.phone.touched" />
+        </div>
+        <div class="admin-field">
+          <label for="whatsapp">WhatsApp Number</label>
+          <input id="whatsapp" type="text" formControlName="whatsapp" placeholder="919000000000" [class.is-invalid]="f.whatsapp.invalid && f.whatsapp.touched" />
+          @if (f.whatsapp.invalid && f.whatsapp.touched) {
+            <small class="error-text">Digits only, with country code (e.g. 919000000000).</small>
+          } @else {
+            <small class="hint-text">Digits only, with country code - no "+", spaces, or dashes (e.g. 919000000000).</small>
+          }
+        </div>
+        <div class="admin-field">
+          <label for="email">Email</label>
+          <input id="email" type="email" formControlName="email" [class.is-invalid]="f.email.invalid && f.email.touched" />
+        </div>
+        <div class="admin-field">
+          <label for="address">Address</label>
+          <input id="address" type="text" formControlName="address" [class.is-invalid]="f.address.invalid && f.address.touched" />
+        </div>
+      </div>
+    </div>
+
+    <!-- SOCIAL SHARE IMAGE -->
+    <div class="admin-card">
+      <h2>Social Share Image</h2>
+      <p class="admin-card__subtitle">Shown when this site is shared on WhatsApp, Facebook, etc. (og:image). Best as a wide image, e.g. 1200x630.</p>
+
+      <div class="admin-form-grid">
+        <div class="admin-form-grid__full">
+          <app-admin-upload
+            label="Share Preview Image"
+            accept="image"
+            folder="hero/og"
+            aspectRatio="1.91 / 1"
+            sizeHint="1200 x 630px"
+            [currentUrl]="ogImageUrl()"
+            (uploaded)="onOgImageUploaded($event)"
+            (removed)="onOgImageRemoved()"
+          ></app-admin-upload>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="admin-btn admin-btn--primary admin-btn--full" [disabled]="isSaving()">
+      @if (isSaving()) {
+        <span class="admin-spinner"></span> Saving...
+      } @else {
+        <i class="fa-solid fa-floppy-disk"></i> Save Changes
+      }
+    </button>
+  </form>
+}

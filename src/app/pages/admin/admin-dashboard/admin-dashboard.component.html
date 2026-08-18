@@ -1,0 +1,50 @@
+<div class="admin-shell">
+  <header class="admin-topbar">
+    <a routerLink="/" class="admin-topbar__brand">
+      @if (logoUrl()) {
+        <img class="admin-topbar__brand-logo" [src]="logoUrl()" alt="" appImgFallback />
+      } @else {
+        <i class="fa-solid fa-building-columns"></i>
+      }
+      @if (isBrandLoading()) {
+        <span class="admin-topbar__brand-loading">Loading...</span>
+      } @else {
+        <span>{{ companyName() || 'Admin' }} <small>Admin</small></span>
+      }
+    </a>
+    <div class="admin-topbar__user">
+      <span class="admin-topbar__email">{{ currentUser()?.email }}</span>
+      <button class="admin-topbar__logout" (click)="logout()">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </button>
+    </div>
+  </header>
+
+  <nav class="admin-tabs">
+    @for (tab of tabs; track tab.id) {
+      <button
+        class="admin-tabs__btn"
+        [class.admin-tabs__btn--active]="activeTab() === tab.id"
+        (click)="setTab(tab.id)"
+      >
+        <i [class]="tab.icon"></i>
+        <span>{{ tab.label }}</span>
+        @if (tab.id === 'inquiries' && newInquiryCount() > 0) {
+          <span class="admin-tabs__badge">{{ newInquiryCount() }}</span>
+        }
+      </button>
+    }
+  </nav>
+
+  <main class="admin-content">
+    @switch (activeTab()) {
+      @case ('settings') { <app-admin-settings-form></app-admin-settings-form> }
+      @case ('inquiries') { <app-admin-inquiries-manager></app-admin-inquiries-manager> }
+      @case ('projects') { <app-admin-projects-manager></app-admin-projects-manager> }
+      @case ('gallery') { <app-admin-gallery-manager></app-admin-gallery-manager> }
+      @case ('services') { <app-admin-services-manager></app-admin-services-manager> }
+      @case ('testimonials') { <app-admin-testimonials-manager></app-admin-testimonials-manager> }
+      @case ('milestones') { <app-admin-milestones-manager></app-admin-milestones-manager> }
+    }
+  </main>
+</div>

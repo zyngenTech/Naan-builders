@@ -1,0 +1,102 @@
+@if (isLoading()) {
+  <app-loader label="Loading project..." [fullHeight]="true"></app-loader>
+} @else if (loadError() || !project()) {
+  <div class="not-found section">
+    <div class="container-xl text-center">
+      <h2>Project Not Found</h2>
+      <p>The project you're looking for may have been moved or removed.</p>
+      <a routerLink="/projects" class="btn-luxury btn-luxury--primary">Back to Projects</a>
+    </div>
+  </div>
+} @else {
+  <section class="details-hero" [style.backgroundImage]="'radial-gradient(120% 90% at 50% 100%, rgba(6,7,8,0.75) 0%, transparent 60%), linear-gradient(180deg, rgba(10,11,13,0.3) 0%, rgba(10,11,13,0.55) 45%, rgba(7,8,9,0.94) 100%), linear-gradient(105deg, rgba(201,162,103,0.20) 0%, rgba(201,162,103,0.04) 32%, transparent 58%), url(' + (project()!.coverImage | cldOptimize:'critical') + ')'">
+    <div class="container-xl details-hero__content">
+      <a routerLink="/projects" class="details-hero__back"><i class="fa-solid fa-arrow-left"></i> All Projects</a>
+      <h1>{{ project()!.title }}</h1>
+      <div class="details-hero__meta">
+        <span><i class="fa-solid fa-location-dot"></i> {{ project()!.location }}</span>
+        <span><i class="fa-solid fa-calendar"></i> Completed {{ project()!.completedDate | date: 'MMMM y' }}</span>
+        @if (project()!.areaSqft) { <span><i class="fa-solid fa-ruler"></i> {{ project()!.areaSqft }} sq.ft</span> }
+        @if (project()!.projectType) { <span><i class="fa-solid fa-house"></i> {{ project()!.projectType }}</span> }
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container-xl details-layout">
+      <div class="details-layout__main">
+        <h2>Overview</h2>
+        <p>{{ project()!.fullDescription || project()!.description }}</p>
+
+        @if (project()!.constructionStages?.length) {
+          <h2 class="mt-lg">Construction Stages</h2>
+          <div class="stages">
+            @for (stage of project()!.constructionStages; track stage.stageName) {
+              <div class="stage-card glass-card">
+                @if (stage.image) { <img [src]="stage.image | cldOptimize:'mobile'" [alt]="stage.stageName" loading="lazy" decoding="async" appImgFallback /> }
+                <div class="stage-card__body">
+                  <h3>{{ stage.stageName }}</h3>
+                  @if (stage.description) { <p>{{ stage.description }}</p> }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <h2 class="mt-lg">Gallery</h2>
+        <div class="details-gallery">
+          @for (img of fullGallery; track img; let i = $index) {
+            <button class="details-gallery__item" (click)="openLightbox(i)">
+              <img [src]="img | cldOptimize:'thumbnail'" [alt]="project()!.title + ' photo ' + (i + 1)" loading="lazy" decoding="async" appImgFallback />
+              <span class="details-gallery__zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></span>
+            </button>
+          }
+        </div>
+
+        @if (project()!.videos?.length) {
+          <h2 class="mt-lg">Videos</h2>
+          <div class="details-videos">
+            @for (video of project()!.videos; track video) {
+              <button class="details-videos__item glass-card" (click)="openVideo(video)">
+                <i class="fa-solid fa-circle-play"></i>
+                <span>Watch Video</span>
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <aside class="details-layout__sidebar">
+        @if (project()!.materialsUsed?.length) {
+          <div class="glass-card sidebar-card">
+            <h3>Materials Used</h3>
+            <ul>
+              @for (material of project()!.materialsUsed; track material) {
+                <li><i class="fa-solid fa-check"></i> {{ material }}</li>
+              }
+            </ul>
+          </div>
+        }
+
+        <div class="glass-card sidebar-card sidebar-card--cta">
+          <h3>Like What You See?</h3>
+          <p>Let's discuss a similar project for your plot.</p>
+          <a routerLink="/contact" class="btn-luxury btn-luxury--primary">Get a Free Quote</a>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  @if (lightboxOpen()) {
+    <app-image-modal
+      [images]="fullGallery"
+      [activeIndex]="lightboxIndex()"
+      (closed)="closeLightbox()"
+      (indexChange)="lightboxIndex.set($event)"
+    ></app-image-modal>
+  }
+
+  @if (activeVideoUrl()) {
+    <app-video-modal [videoUrl]="activeVideoUrl()!" (closed)="closeVideo()"></app-video-modal>
+  }
+}

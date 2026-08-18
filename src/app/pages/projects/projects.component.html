@@ -1,0 +1,36 @@
+<app-hero
+  [backgroundImage]="settings()?.heroImageProjects"
+  eyebrow="Portfolio"
+  [title]="heroTitle()"
+  [compact]="true"
+></app-hero>
+
+<section class="section">
+  <div class="container-xl">
+    @if (!isLoading() && filterOptions().length > 1) {
+      <div class="filter-bar">
+        @for (type of filterOptions(); track type) {
+          <button
+            class="filter-chip"
+            [class.filter-chip--active]="activeFilter() === type"
+            (click)="setFilter(type)"
+          >
+            {{ type }}
+          </button>
+        }
+      </div>
+    }
+
+    @if (isLoading()) {
+      <app-loader label="Loading projects..."></app-loader>
+    } @else if (filteredProjects().length === 0) {
+      <p class="empty-state">No projects to show yet - add documents to the "projects" Firestore collection.</p>
+    } @else {
+      <div class="projects-grid">
+        @for (project of filteredProjects(); track trackByProjectId($index, project)) {
+          <app-project-card [project]="project"></app-project-card>
+        }
+      </div>
+    }
+  </div>
+</section>

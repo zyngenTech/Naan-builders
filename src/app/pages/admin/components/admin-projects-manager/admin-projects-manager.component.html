@@ -1,0 +1,134 @@
+@if (!showForm()) {
+  <div class="admin-card">
+    <div class="admin-manager-header">
+      <div>
+        <h2>Projects</h2>
+        <p class="admin-card__subtitle">{{ projects().length }} project(s)</p>
+      </div>
+      <button class="admin-btn admin-btn--primary admin-btn--sm" (click)="openAddForm()">
+        <i class="fa-solid fa-plus"></i> Add Project
+      </button>
+    </div>
+
+    @if (isLoading()) {
+      <div class="admin-empty"><span class="admin-spinner"></span> Loading projects...</div>
+    } @else if (projects().length === 0) {
+      <div class="admin-empty">No projects yet - click "Add Project" to create your first one.</div>
+    } @else {
+      <div class="admin-list">
+        @for (project of projects(); track project.id) {
+          <div class="admin-list-item">
+            <img class="admin-list-item__thumb" [src]="project.coverImage" [alt]="project.title" appImgFallback />
+            <div class="admin-list-item__body">
+              <strong>{{ project.title }}</strong>
+              <span>{{ project.location }} &middot; {{ project.completedDate | date: 'MMM y' }}</span>
+            </div>
+            <div class="admin-list-item__actions">
+              <button (click)="openEditForm(project)" aria-label="Edit"><i class="fa-solid fa-pen"></i></button>
+              <button class="is-danger" (click)="deleteProject(project)" aria-label="Delete"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+} @else {
+  <div class="admin-card">
+    <div class="admin-manager-header">
+      <h2>{{ editingId() ? 'Edit Project' : 'Add New Project' }}</h2>
+      <button class="admin-btn admin-btn--outline admin-btn--sm" (click)="cancelForm()">
+        <i class="fa-solid fa-xmark"></i> Cancel
+      </button>
+    </div>
+
+    <form [formGroup]="projectForm" (ngSubmit)="onSubmit()" novalidate>
+      <div class="admin-form-grid">
+        <div class="admin-form-grid__full">
+          <app-admin-upload
+            label="Cover Photo *"
+            accept="image"
+            folder="projects/covers"
+            aspectRatio="4 / 3"
+            sizeHint="1200 x 900px (4:3)"
+            [currentUrl]="coverImageUrl()"
+            (uploaded)="onCoverUploaded($event)"
+            (removed)="onCoverRemoved()"
+          ></app-admin-upload>
+        </div>
+
+        <div class="admin-field admin-form-grid__full">
+          <label for="title">Project Title *</label>
+          <input id="title" type="text" formControlName="title" [class.is-invalid]="f.title.invalid && f.title.touched" />
+        </div>
+
+        <div class="admin-field">
+          <label for="location">Location *</label>
+          <input id="location" type="text" formControlName="location" [class.is-invalid]="f.location.invalid && f.location.touched" />
+        </div>
+        <div class="admin-field">
+          <label for="completedDate">Completed Date *</label>
+          <input id="completedDate" type="date" formControlName="completedDate" [class.is-invalid]="f.completedDate.invalid && f.completedDate.touched" />
+        </div>
+
+        <div class="admin-field">
+          <label for="projectType">Project Type *</label>
+          <select id="projectType" formControlName="projectType">
+            @for (type of projectTypes; track type) {
+              <option [value]="type">{{ type }}</option>
+            }
+          </select>
+        </div>
+        <div class="admin-field">
+          <label for="areaSqft">Area (sq.ft)</label>
+          <input id="areaSqft" type="number" formControlName="areaSqft" />
+        </div>
+
+        <div class="admin-form-grid__full admin-field">
+          <label for="description">Short Description *</label>
+          <textarea id="description" rows="2" formControlName="description" [class.is-invalid]="f.description.invalid && f.description.touched"></textarea>
+        </div>
+        <div class="admin-form-grid__full admin-field">
+          <label for="fullDescription">Full Description (Project Details page)</label>
+          <textarea id="fullDescription" rows="3" formControlName="fullDescription"></textarea>
+        </div>
+
+        <div class="admin-form-grid__full">
+          <app-admin-multi-upload
+            label="Gallery Photos"
+            accept="image"
+            folder="projects/gallery"
+            sizeHint="1200 x 900px each (4:3)"
+            [urls]="galleryUrls()"
+            (urlsChange)="onGalleryChange($event)"
+          ></app-admin-multi-upload>
+        </div>
+
+        <div class="admin-form-grid__full">
+          <app-admin-multi-upload
+            label="Project Videos"
+            accept="video"
+            folder="projects/videos"
+            sizeHint="MP4, landscape, under 100MB each"
+            [urls]="videoUrls()"
+            (urlsChange)="onVideosChange($event)"
+          ></app-admin-multi-upload>
+        </div>
+
+        <div class="admin-form-grid__full admin-checkbox">
+          <label>
+            <input type="checkbox" formControlName="featured" />
+            Show in "Latest Projects" on the homepage
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" class="admin-btn admin-btn--primary admin-btn--full" [disabled]="isSaving()">
+        @if (isSaving()) {
+          <span class="admin-spinner"></span> Saving...
+        } @else {
+          <i class="fa-solid fa-floppy-disk"></i> {{ editingId() ? 'Update Project' : 'Save Project' }}
+        }
+      </button>
+    </form>
+  </div>
+}

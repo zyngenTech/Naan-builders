@@ -1,0 +1,27 @@
+main {
+  display: block;
+  min-height: 60vh;
+}
+
+/*
+ * CLS guard - reserves a full viewport for <main> ONLY while the first
+ * route's lazy chunk is still loading. Removed the instant the route
+ * renders, so the settled layout of every page is byte-for-byte what it
+ * was before (the 60vh baseline above still applies).
+ *
+ * Why this exists: between app-shell paint and the home chunk arriving,
+ * <main> holds nothing but an empty <router-outlet>, so it collapses to
+ * 60vh. On a ~800px mobile viewport that puts <app-footer> at roughly
+ * y=480px - fully on screen. When the route finally renders, main grows
+ * to several thousand pixels and the footer is shoved far below the
+ * fold. That single movement measured 0.400 of the page's 0.403
+ * Cumulative Layout Shift (Lighthouse "layout-shifts" audit, 2026-08-16)
+ * - 99.2% of the total, and about 18 points of the Performance score.
+ *
+ * 100svh (not 100vh) so mobile browser chrome doesn't over-reserve;
+ * the 100vh line is a fallback for engines without svh support.
+ */
+main.app-main--booting {
+  min-height: 100vh;
+  min-height: 100svh;
+}

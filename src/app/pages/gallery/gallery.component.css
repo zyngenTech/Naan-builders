@@ -1,0 +1,71 @@
+.filter-bar { display: flex; gap: 0.7rem; margin-bottom: var(--space-lg); }
+.filter-chip {
+  display: inline-flex; align-items: center; min-height: 44px;
+  padding: 0.55rem 1.3rem; border-radius: 999px; border: 1px solid var(--color-border);
+  background: transparent; color: var(--color-text-muted); font-size: 0.85rem; cursor: pointer;
+  transition: all var(--transition-base);
+}
+.filter-chip:hover { border-color: var(--color-gold); color: var(--color-text); }
+.filter-chip--active { background: var(--color-gold); color: #1a1508; border-color: var(--color-gold); font-weight: 600; }
+
+.masonry {
+  columns: 4 240px;
+  column-gap: 0.9rem;
+}
+.masonry__item {
+  position: relative;
+  display: block;
+  width: 100%;
+  margin-bottom: 0.9rem;
+  break-inside: avoid;
+  border: none;
+  padding: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+}
+.masonry__item img { width: 100%; display: block; object-fit: cover; transition: transform 0.5s ease; }
+.masonry__item:hover img { transform: scale(1.06); }
+
+/* Deliberate height variation so the grid always reads as an uneven,
+   Pinterest-style layout - not dependent on the uploaded photos all
+   happening to have different natural aspect ratios. */
+.masonry__item:nth-child(6n+1) img { aspect-ratio: 3 / 4; }
+.masonry__item:nth-child(6n+2) img { aspect-ratio: 1 / 1; }
+.masonry__item:nth-child(6n+3) img { aspect-ratio: 4 / 5; }
+.masonry__item:nth-child(6n+4) img { aspect-ratio: 4 / 3; }
+.masonry__item:nth-child(6n+5) img { aspect-ratio: 1 / 1; }
+.masonry__item:nth-child(6n+6) img { aspect-ratio: 3 / 4; }
+
+.masonry__play {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(10,11,13,0.35); color: #fff; font-size: 2.2rem;
+}
+.masonry__caption {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 0.8rem;
+  background: linear-gradient(180deg, transparent, rgba(10,11,13,0.85));
+  color: #fff; font-size: 0.8rem; text-align: left;
+  opacity: 0; transition: opacity var(--transition-base);
+}
+.masonry__item:hover .masonry__caption { opacity: 1; }
+
+.empty-state { text-align: center; color: var(--color-text-muted); padding: var(--space-lg) 0; }
+
+@media (max-width: 575px) {
+  /* CSS-column masonry fills each column top-to-bottom before moving to
+     the next one, so items can appear out of upload order when read
+     left-to-right - fine on a wide desktop grid, but confusing on a
+     narrow phone. Mobile switches to a real CSS Grid instead: uniform
+     square cells in the exact order items were added, like a clean
+     Instagram-style photo grid. */
+  .masonry {
+    columns: unset;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.7rem;
+  }
+  .masonry__item { margin-bottom: 0; break-inside: unset; }
+  .masonry__item img { aspect-ratio: 1 / 1 !important; }
+}

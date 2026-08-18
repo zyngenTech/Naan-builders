@@ -1,0 +1,44 @@
+<header class="navbar" [class.navbar--solid]="isScrolled() || isMenuOpen()">
+  <div class="container-xl navbar__inner">
+    <a routerLink="/" class="navbar__brand" (click)="closeMenu()">
+      @if (logoUrl()) {
+        <img class="navbar__brand-logo" [src]="logoUrl() | cldOptimize:'logo'" alt="" appImgFallback decoding="async" />
+      } @else {
+        <i class="fa-solid fa-building-columns"></i>
+      }
+      @if (isBrandLoading()) {
+        <span class="navbar__brand-loading">Loading...</span>
+      } @else {
+        <span>{{ companyName() || 'Home' }}</span>
+      }
+    </a>
+
+    <nav class="navbar__links" [class.navbar__links--open]="isMenuOpen()">
+      <button class="navbar__close" (click)="closeMenu()" aria-label="Close menu">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      @for (link of links; track link.path) {
+        <a
+          [routerLink]="link.path"
+          routerLinkActive="is-active"
+          [routerLinkActiveOptions]="{ exact: link.path === '/' }"
+          (click)="closeMenu()"
+        >
+          {{ link.label }}
+        </a>
+      }
+      <a routerLink="/contact" class="btn-luxury btn-luxury--primary navbar__cta" (click)="closeMenu()">
+        Get a Quote
+      </a>
+    </nav>
+
+    @if (isMenuOpen()) {
+      <div class="navbar__scrim" (click)="closeMenu()"></div>
+    }
+
+    <button class="navbar__toggle" (click)="toggleMenu()" [attr.aria-expanded]="isMenuOpen()" aria-label="Toggle navigation menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>

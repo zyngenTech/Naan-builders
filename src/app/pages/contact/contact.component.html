@@ -1,0 +1,130 @@
+<app-hero
+  [backgroundImage]="heroImage()"
+  eyebrow="Let's Build Together"
+  title="Start Your Project Today"
+  [compact]="true"
+></app-hero>
+
+<section class="section">
+  <div class="container-xl contact-layout">
+    <div class="contact-info">
+      <app-section-title eyebrow="Get in Touch" title="We'd Love to Hear About Your Project" align="left"></app-section-title>
+
+      <div class="contact-info__item glass-card">
+        <i class="fa-solid fa-phone"></i>
+        <div><strong>Call Us</strong><span>{{ contact().phone }}</span></div>
+      </div>
+      <div class="contact-info__item glass-card">
+        <i class="fa-brands fa-whatsapp"></i>
+        <div><strong>WhatsApp</strong><span>Quick replies, usually within an hour</span></div>
+      </div>
+      <div class="contact-info__item glass-card">
+        <i class="fa-solid fa-envelope"></i>
+        <div><strong>Email</strong><span>{{ contact().email }}</span></div>
+      </div>
+      <div class="contact-info__item glass-card">
+        <i class="fa-solid fa-location-dot"></i>
+        <div><strong>Based In</strong><span>{{ contact().address }}</span></div>
+      </div>
+    </div>
+
+    <form class="contact-form glass-card" [formGroup]="inquiryForm" (ngSubmit)="onSubmit()" novalidate>
+      <h3>Request a Free Quote</h3>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="name">Full Name *</label>
+          <input id="name" type="text" formControlName="name" placeholder="e.g. Priya Ramanathan" [class.is-invalid]="f.name.invalid && f.name.touched"
+                 [attr.aria-invalid]="f.name.invalid && f.name.touched ? true : null" [attr.aria-describedby]="f.name.invalid && f.name.touched ? 'name-error' : null" />
+          @if (f.name.invalid && f.name.touched) {
+            <small class="error-text" id="name-error">
+              @if (f.name.errors?.['required']) { Name is required. }
+              @else { Name must be 2-60 characters. }
+            </small>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number *</label>
+          <input id="phone" type="tel" formControlName="phone" placeholder="e.g. 98765 43210" [class.is-invalid]="f.phone.invalid && f.phone.touched"
+                 [attr.aria-invalid]="f.phone.invalid && f.phone.touched ? true : null" [attr.aria-describedby]="f.phone.invalid && f.phone.touched ? 'phone-error' : null" />
+          @if (f.phone.invalid && f.phone.touched) {
+            <small class="error-text" id="phone-error">Please enter a valid phone number.</small>
+          }
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="email">Email Address *</label>
+          <input id="email" type="email" formControlName="email" placeholder="e.g. priya@email.com" [class.is-invalid]="f.email.invalid && f.email.touched"
+                 [attr.aria-invalid]="f.email.invalid && f.email.touched ? true : null" [attr.aria-describedby]="f.email.invalid && f.email.touched ? 'email-error' : null" />
+          @if (f.email.invalid && f.email.touched) {
+            <small class="error-text" id="email-error">Please enter a valid email address.</small>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="location">Project Location *</label>
+          <input id="location" type="text" formControlName="location" placeholder="e.g. Coimbatore" [class.is-invalid]="f.location.invalid && f.location.touched"
+                 [attr.aria-invalid]="f.location.invalid && f.location.touched ? true : null" [attr.aria-describedby]="f.location.invalid && f.location.touched ? 'location-error' : null" />
+          @if (f.location.invalid && f.location.touched) {
+            <small class="error-text" id="location-error">Location is required.</small>
+          }
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="projectType">Project Type *</label>
+          <select id="projectType" formControlName="projectType" [class.is-invalid]="f.projectType.invalid && f.projectType.touched"
+                  [attr.aria-invalid]="f.projectType.invalid && f.projectType.touched ? true : null" [attr.aria-describedby]="f.projectType.invalid && f.projectType.touched ? 'projectType-error' : null">
+            <option value="" disabled>Select project type</option>
+            @for (type of projectTypes; track type) {
+              <option [value]="type">{{ type }}</option>
+            }
+          </select>
+          @if (f.projectType.invalid && f.projectType.touched) {
+            <small class="error-text" id="projectType-error">Please select a project type.</small>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="budget">Estimated Budget *</label>
+          <select id="budget" formControlName="budget" [class.is-invalid]="f.budget.invalid && f.budget.touched"
+                  [attr.aria-invalid]="f.budget.invalid && f.budget.touched ? true : null" [attr.aria-describedby]="f.budget.invalid && f.budget.touched ? 'budget-error' : null">
+            <option value="" disabled>Select budget range</option>
+            @for (range of budgetRanges; track range) {
+              <option [value]="range">{{ range }}</option>
+            }
+          </select>
+          @if (f.budget.invalid && f.budget.touched) {
+            <small class="error-text" id="budget-error">Please select a budget range.</small>
+          }
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="message">Tell Us About Your Project *</label>
+        <textarea id="message" rows="4" formControlName="message" placeholder="Plot size, number of floors, timeline, or anything else that helps us understand your needs..." [class.is-invalid]="f.message.invalid && f.message.touched"
+                  [attr.aria-invalid]="f.message.invalid && f.message.touched ? true : null" [attr.aria-describedby]="f.message.invalid && f.message.touched ? 'message-error' : null"></textarea>
+        <div class="form-group__footer">
+          @if (f.message.invalid && f.message.touched) {
+            <small class="error-text" id="message-error">Message should be 10-600 characters.</small>
+          } @else {
+            <span></span>
+          }
+          <small class="char-count">{{ f.message.value.length }}/600</small>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-luxury btn-luxury--primary contact-form__submit" [disabled]="isSubmitting()">
+        @if (isSubmitting()) {
+          <span class="spinner"></span> Sending...
+        } @else {
+          <i class="fa-solid fa-paper-plane"></i> Send Inquiry
+        }
+      </button>
+    </form>
+  </div>
+</section>

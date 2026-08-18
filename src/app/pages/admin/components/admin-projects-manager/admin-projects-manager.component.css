@@ -1,0 +1,13 @@
+.admin-manager-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.admin-checkbox label { display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: var(--color-text); cursor: pointer; }
+.admin-checkbox input { width: 18px; height: 18px; accent-color: var(--color-gold); }
+
+form { margin-top: 0.5rem; }
+form .admin-btn--full { margin-top: 1.2rem; }

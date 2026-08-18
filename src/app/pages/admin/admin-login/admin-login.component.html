@@ -1,0 +1,61 @@
+<section class="admin-login">
+  <div class="admin-login__card glass-card">
+    <div class="admin-login__brand">
+      @if (logoUrl()) {
+        <img class="admin-login__brand-logo" [src]="logoUrl()" alt="" appImgFallback />
+      } @else {
+        <i class="fa-solid fa-building-columns"></i>
+      }
+      @if (isBrandLoading()) {
+        <span class="admin-login__brand-loading">Loading...</span>
+      } @else {
+        <span>{{ companyName() || 'Admin' }} <small>Admin</small></span>
+      }
+    </div>
+
+    <h1>Admin Login</h1>
+    <p class="admin-login__subtitle">Manage projects, gallery, testimonials, and site content.</p>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" formControlName="email" placeholder="admin@yourdomain.com" [class.is-invalid]="f.email.invalid && f.email.touched" autocomplete="username" />
+        @if (f.email.invalid && f.email.touched) {
+          <small class="error-text">Please enter a valid email address.</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="password-field">
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="••••••••"
+            [class.is-invalid]="f.password.invalid && f.password.touched"
+            autocomplete="current-password"
+          />
+          <button type="button" class="password-field__toggle" (click)="togglePassword()" [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'">
+            <i class="fa-solid" [class.fa-eye]="!showPassword()" [class.fa-eye-slash]="showPassword()"></i>
+          </button>
+        </div>
+        @if (f.password.invalid && f.password.touched) {
+          <small class="error-text">Password must be at least 6 characters.</small>
+        }
+      </div>
+
+      <button type="submit" class="btn-luxury btn-luxury--primary admin-login__submit" [disabled]="isSubmitting()">
+        @if (isSubmitting()) {
+          <span class="spinner"></span> Signing in...
+        } @else {
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In
+        }
+      </button>
+    </form>
+
+    <a routerLink="/" class="admin-login__back">
+      <i class="fa-solid fa-arrow-left"></i> Back to website
+    </a>
+  </div>
+</section>

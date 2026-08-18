@@ -1,0 +1,13 @@
+<div class="app-loader" [class.app-loader--hidden]="!visible">
+  <div class="app-loader__inner">
+    <div class="app-loader__brand">
+      @if (logoUrl) {
+        <img class="app-loader__logo" [src]="logoUrl | cldOptimize:'logo'" alt="" appImgFallback decoding="async" />
+      } @else {
+        <i class="fa-solid fa-building-columns"></i>
+      }
+    </div>
+    <div class="app-loader__spinner"></div>
+    <p>Loading...</p>
+  </div>
+</div>

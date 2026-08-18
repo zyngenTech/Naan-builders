@@ -1,0 +1,59 @@
+<div class="admin-upload">
+  <label class="admin-upload__label">{{ label }}</label>
+  @if (sizeHint) {
+    <span class="admin-upload__hint">Recommended: {{ sizeHint }}</span>
+  }
+
+  @if (currentUrl && !isUploading()) {
+    <div class="admin-upload__preview" [style.aspectRatio]="aspectRatio">
+      @if (mediaFailed()) {
+        <div class="admin-upload__error">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span>This {{ accept }} could not be loaded. Check the link or re-upload.</span>
+        </div>
+      } @else if (accept === 'video') {
+        <video [src]="currentUrl" controls muted (error)="onMediaError()"></video>
+      } @else {
+        <img [src]="currentUrl" alt="Uploaded preview" (error)="onMediaError()" />
+      }
+      <button type="button" class="admin-upload__remove" (click)="clear()" aria-label="Remove file">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  } @else if (isUploading()) {
+    <div class="admin-upload__progress" [style.aspectRatio]="aspectRatio">
+      <div class="admin-upload__progress-bar">
+        <div class="admin-upload__progress-fill" [style.width.%]="progress()"></div>
+      </div>
+      <span>Uploading... {{ progress() }}%</span>
+    </div>
+  } @else {
+    <div class="admin-upload__mode-toggle">
+      <button type="button" [class.is-active]="mode() === 'file'" (click)="setMode('file')">
+        <i class="fa-solid fa-upload"></i> Upload
+      </button>
+      <button type="button" [class.is-active]="mode() === 'url'" (click)="setMode('url')">
+        <i class="fa-solid fa-link"></i> Paste URL
+      </button>
+    </div>
+
+    @if (mode() === 'file') {
+      <label class="admin-upload__dropzone" [style.aspectRatio]="aspectRatio">
+        <i class="fa-solid" [class.fa-image]="accept === 'image'" [class.fa-video]="accept === 'video'"></i>
+        <span>Click to upload {{ accept }}</span>
+        <input type="file" [accept]="acceptAttr" (change)="onFileSelected($event)" hidden />
+      </label>
+    } @else {
+      <div class="admin-upload__url-row">
+        <input
+          type="url"
+          [placeholder]="accept === 'video' ? 'https://... or a YouTube link' : 'https://...'"
+          [ngModel]="urlInput()"
+          (ngModelChange)="urlInput.set($event)"
+          (keydown.enter)="$event.preventDefault(); useUrl()"
+        />
+        <button type="button" class="admin-btn admin-btn--primary admin-btn--sm" (click)="useUrl()">Use</button>
+      </div>
+    }
+  }
+</div>

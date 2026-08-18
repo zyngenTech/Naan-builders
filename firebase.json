@@ -1,0 +1,70 @@
+{
+  "hosting": {
+    "public": "dist/civil-engineer-portfolio/browser",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "rewrites": [
+      { "source": "**", "destination": "/index.html" }
+    ],
+    "headers": [
+      {
+        "comment": "Hashed build assets never change content under the same name, so they can be cached forever.",
+        "source": "**/*.@(jpg|jpeg|gif|png|webp|svg|css|js|woff|woff2)",
+        "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      },
+      {
+        "comment": "index.html must NOT be cached, or browsers keep serving an old shell that points at deleted hashed bundles after a deploy - the classic 'site broken until hard refresh' bug.",
+        "source": "/index.html",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
+      },
+      {
+        "comment": "SEO files change between deploys; keep them fresh but cacheable for an hour.",
+        "source": "/@(robots.txt|sitemap.xml)",
+        "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600" }]
+      },
+      {
+        "comment": "Security headers applied to every response.",
+        "source": "**",
+        "headers": [
+          {
+            "comment": "Force HTTPS for 2 years, including subdomains. Firebase Hosting is HTTPS-only anyway; this stops a downgrade attempt before the first request.",
+            "key": "Strict-Transport-Security",
+            "value": "max-age=63072000; includeSubDomains; preload"
+          },
+          {
+            "comment": "Stops browsers guessing a file is a script when the server said it is not.",
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "comment": "Nobody should be able to frame this site - blocks clickjacking of the admin login.",
+            "key": "X-Frame-Options",
+            "value": "DENY"
+          },
+          {
+            "comment": "Send the full URL to ourselves, only the origin to third parties, nothing over plain HTTP.",
+            "key": "Referrer-Policy",
+            "value": "strict-origin-when-cross-origin"
+          },
+          {
+            "comment": "The site needs none of these device APIs; deny them outright.",
+            "key": "Permissions-Policy",
+            "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
+          },
+          {
+            "comment": "Content-Security-Policy in REPORT-ONLY mode on purpose. It logs violations to the browser console and blocks NOTHING, so it cannot break the site. Watch the console for a week; once it is quiet, rename this header to Content-Security-Policy to start enforcing. Enforcing it blind would almost certainly break Cloudinary images, the Firestore/Storage calls, Google Fonts or Font Awesome.",
+            "key": "Content-Security-Policy-Report-Only",
+            "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://res.cloudinary.com https://firebasestorage.googleapis.com https://lh3.googleusercontent.com; media-src 'self' https://res.cloudinary.com https://firebasestorage.googleapis.com; connect-src 'self' https://firestore.googleapis.com https://firebasestorage.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://res.cloudinary.com; frame-src https://www.youtube.com https://www.youtube-nocookie.com https://naan-builders.firebaseapp.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
+          }
+        ]
+      }
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  }
+}

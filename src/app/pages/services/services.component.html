@@ -1,0 +1,42 @@
+<app-hero
+  [backgroundImage]="settings()?.heroImageServices"
+  eyebrow="What We Offer"
+  title="Services Built Around Your Home"
+  [compact]="true"
+></app-hero>
+
+<section class="section">
+  <div class="container-xl">
+    <app-section-title
+      eyebrow="Full-Service Contracting"
+      title="From Blueprint to Handover"
+      subtitle="Every service is handled in-house or by vetted specialists we personally supervise."
+    ></app-section-title>
+
+    @if (isLoading()) {
+      <app-loader label="Loading services..."></app-loader>
+    } @else if (services().length === 0) {
+      <p class="empty-state">Services will appear here - add them from the Admin dashboard.</p>
+    } @else {
+      <div class="services-full-grid">
+        @for (service of services(); track service.id ?? service.title) {
+          <div class="service-full-card glass-card">
+            <div class="service-full-card__icon"><i [class]="service.icon"></i></div>
+            <h3>{{ service.title }}</h3>
+            <p>{{ service.description }}</p>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+<section class="section section--alt">
+  <div class="container-xl cta__inner glass-card">
+    <div>
+      <h2>Not Sure Which Service You Need?</h2>
+      <p>Tell us about your project and we'll recommend the right approach - free of charge.</p>
+    </div>
+    <a routerLink="/contact" class="btn-luxury btn-luxury--primary">Talk to Us <i class="fa-solid fa-arrow-right"></i></a>
+  </div>
+</section>

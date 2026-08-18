@@ -1,0 +1,20 @@
+<div class="image-modal" (click)="close()">
+  <button class="image-modal__close" (click)="close(); $event.stopPropagation()" aria-label="Close">
+    <i class="fa-solid fa-xmark"></i>
+  </button>
+
+  @if (images.length > 1) {
+    <button class="image-modal__nav image-modal__nav--prev" (click)="prev(); $event.stopPropagation()" aria-label="Previous image">
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+  }
+
+  <img [src]="images[activeIndex] | cldOptimize:'fullscreen'" alt="Enlarged project image" class="image-modal__img" decoding="async" (click)="$event.stopPropagation()" appImgFallback />
+
+  @if (images.length > 1) {
+    <button class="image-modal__nav image-modal__nav--next" (click)="next(); $event.stopPropagation()" aria-label="Next image">
+      <i class="fa-solid fa-chevron-right"></i>
+    </button>
+    <div class="image-modal__counter">{{ activeIndex + 1 }} / {{ images.length }}</div>
+  }
+</div>

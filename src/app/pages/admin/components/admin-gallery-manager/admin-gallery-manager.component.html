@@ -1,0 +1,77 @@
+@if (!showForm()) {
+  <div class="admin-card">
+    <div class="admin-manager-header">
+      <div>
+        <h2>Gallery</h2>
+        <p class="admin-card__subtitle">{{ items().length }} item(s)</p>
+      </div>
+      <div class="admin-manager-header__actions">
+        <button class="admin-btn admin-btn--primary admin-btn--sm" (click)="openAddForm('image')">
+          <i class="fa-solid fa-image"></i> Photo
+        </button>
+        <button class="admin-btn admin-btn--outline admin-btn--sm" (click)="openAddForm('video')">
+          <i class="fa-solid fa-video"></i> Video
+        </button>
+      </div>
+    </div>
+
+    @if (isLoading()) {
+      <div class="admin-empty"><span class="admin-spinner"></span> Loading gallery...</div>
+    } @else if (items().length === 0) {
+      <div class="admin-empty">No gallery items yet - add a photo or video above.</div>
+    } @else {
+      <div class="admin-list">
+        @for (item of items(); track item.id) {
+          <div class="admin-list-item">
+            <img class="admin-list-item__thumb" [src]="item.thumbnailUrl || item.url" [alt]="item.caption || 'Gallery item'" appImgFallback />
+            <div class="admin-list-item__body">
+              <strong>{{ item.type === 'video' ? 'Video' : 'Photo' }}</strong>
+              <span>{{ item.caption || 'No caption' }}</span>
+            </div>
+            <div class="admin-list-item__actions">
+              <button class="is-danger" (click)="deleteItem(item)" aria-label="Delete"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+} @else {
+  <div class="admin-card">
+    <div class="admin-manager-header">
+      <h2>Add {{ fileType() === 'video' ? 'Video' : 'Photo' }}</h2>
+      <button class="admin-btn admin-btn--outline admin-btn--sm" (click)="cancelForm()">
+        <i class="fa-solid fa-xmark"></i> Cancel
+      </button>
+    </div>
+
+    <form [formGroup]="captionForm" (ngSubmit)="onSubmit()" novalidate>
+      <div class="admin-form-grid">
+        <div class="admin-form-grid__full">
+          <app-admin-upload
+            [label]="fileType() === 'video' ? 'Video File *' : 'Photo *'"
+            [accept]="fileType()"
+            folder="gallery"
+            aspectRatio="4 / 3"
+            [sizeHint]="fileType() === 'video' ? 'MP4, under 100MB' : '1200 x 900px (4:3)'"
+            [currentUrl]="fileUrl()"
+            (uploaded)="onFileUploaded($event)"
+            (removed)="onFileRemoved()"
+          ></app-admin-upload>
+        </div>
+        <div class="admin-field admin-form-grid__full">
+          <label for="caption">Caption (optional)</label>
+          <input id="caption" type="text" formControlName="caption" placeholder="e.g. Living room finishing" />
+        </div>
+      </div>
+
+      <button type="submit" class="admin-btn admin-btn--primary admin-btn--full" [disabled]="isSaving()">
+        @if (isSaving()) {
+          <span class="admin-spinner"></span> Saving...
+        } @else {
+          <i class="fa-solid fa-floppy-disk"></i> Add to Gallery
+        }
+      </button>
+    </form>
+  </div>
+}

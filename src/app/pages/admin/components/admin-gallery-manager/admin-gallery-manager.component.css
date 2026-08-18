@@ -1,0 +1,3 @@
+.admin-manager-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.2rem; }
+.admin-manager-header__actions { display: flex; gap: 0.5rem; }
+form .admin-btn--full { margin-top: 1.2rem; }

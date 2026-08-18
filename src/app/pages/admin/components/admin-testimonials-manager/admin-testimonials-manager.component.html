@@ -1,0 +1,93 @@
+@if (!showForm()) {
+  <div class="admin-card">
+    <div class="admin-manager-header">
+      <div>
+        <h2>Testimonials</h2>
+        <p class="admin-card__subtitle">{{ testimonials().length }} testimonial(s)</p>
+      </div>
+      <button class="admin-btn admin-btn--primary admin-btn--sm" (click)="openAddForm()">
+        <i class="fa-solid fa-plus"></i> Add Testimonial
+      </button>
+    </div>
+
+    @if (isLoading()) {
+      <div class="admin-empty"><span class="admin-spinner"></span> Loading testimonials...</div>
+    } @else if (testimonials().length === 0) {
+      <div class="admin-empty">No testimonials yet - click "Add Testimonial" to create one.</div>
+    } @else {
+      <div class="admin-list">
+        @for (t of testimonials(); track t.id) {
+          <div class="admin-list-item">
+            @if (t.photoUrl) {
+              <img class="admin-list-item__thumb" [src]="t.photoUrl" [alt]="t.customerName" appImgFallback />
+            } @else {
+              <div class="admin-list-item__thumb admin-list-item__thumb--placeholder"><i class="fa-solid fa-user"></i></div>
+            }
+            <div class="admin-list-item__body">
+              <strong>{{ t.customerName }} &middot; {{ t.rating }}<i class="fa-solid fa-star"></i></strong>
+              <span>{{ t.feedback }}</span>
+            </div>
+            <div class="admin-list-item__actions">
+              <button (click)="openEditForm(t)" aria-label="Edit"><i class="fa-solid fa-pen"></i></button>
+              <button class="is-danger" (click)="deleteTestimonial(t)" aria-label="Delete"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+} @else {
+  <div class="admin-card">
+    <div class="admin-manager-header">
+      <h2>{{ editingId() ? 'Edit Testimonial' : 'Add Testimonial' }}</h2>
+      <button class="admin-btn admin-btn--outline admin-btn--sm" (click)="cancelForm()">
+        <i class="fa-solid fa-xmark"></i> Cancel
+      </button>
+    </div>
+
+    <form [formGroup]="testimonialForm" (ngSubmit)="onSubmit()" novalidate>
+      <div class="admin-form-grid">
+        <div class="admin-field">
+          <label for="customerName">Customer Name *</label>
+          <input id="customerName" type="text" formControlName="customerName" [class.is-invalid]="f.customerName.invalid && f.customerName.touched" />
+        </div>
+        <div class="admin-field">
+          <label for="location">Location</label>
+          <input id="location" type="text" formControlName="location" />
+        </div>
+        <div class="admin-field">
+          <label for="rating">Rating *</label>
+          <select id="rating" formControlName="rating">
+            @for (r of ratingOptions; track r) {
+              <option [value]="r">{{ r }} Star{{ r > 1 ? 's' : '' }}</option>
+            }
+          </select>
+        </div>
+        <div class="admin-form-grid__full">
+          <app-admin-upload
+            label="Customer Photo (optional)"
+            accept="image"
+            folder="testimonials"
+            aspectRatio="1 / 1"
+            sizeHint="500 x 500px (square)"
+            [currentUrl]="photoUrl()"
+            (uploaded)="onPhotoUploaded($event)"
+            (removed)="onPhotoRemoved()"
+          ></app-admin-upload>
+        </div>
+        <div class="admin-form-grid__full admin-field">
+          <label for="feedback">Feedback *</label>
+          <textarea id="feedback" rows="3" formControlName="feedback" [class.is-invalid]="f.feedback.invalid && f.feedback.touched"></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="admin-btn admin-btn--primary admin-btn--full" [disabled]="isSaving()">
+        @if (isSaving()) {
+          <span class="admin-spinner"></span> Saving...
+        } @else {
+          <i class="fa-solid fa-floppy-disk"></i> {{ editingId() ? 'Update Testimonial' : 'Save Testimonial' }}
+        }
+      </button>
+    </form>
+  </div>
+}

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <base href="/" />
+  <link rel="canonical" href="https://naan-builders.web.app/" />
+  <title>NaanBuilders | Civil Engineer &amp; Building Contractor</title>
+  <meta name="description" content="Premium civil engineering & residential construction services. Explore our portfolio and request a free consultation." />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="NaanBuilders | Civil Engineer & Building Contractor" />
+  <meta property="og:description" content="Building homes you can trust - explore our portfolio and request a free consultation." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://naan-builders.web.app/" />
+  <meta property="og:image" content="https://naan-builders.web.app/assets/images/og-cover.jpg" />
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "GeneralContractor",
+    "name": "NaanBuilders",
+    "description": "Independent civil engineer and building contractor specializing in residential house construction.",
+    "areaServed": "IN",
+    "priceRange": "$$"
+  }
+  </script>
+
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
+
+  <!--
+    Preload the two webfont files the above-the-fold text actually uses.
+
+    Without this the browser cannot discover them until it has downloaded
+    AND parsed the Google Fonts stylesheet below - in the 2026-08-16 trace
+    that delayed Playfair Display (the hero <h1> face) to 404ms and Inter
+    to 203ms. Because both are declared `display=swap`, the hero title
+    first paints in a fallback face and then REPAINTS when Playfair
+    arrives, and that repaint resets the Largest Contentful Paint marker.
+    Starting the download at ~130ms instead moves that final repaint
+    earlier, which moves LCP earlier.
+
+    These are the exact URLs the stylesheet resolved to in that trace.
+    Google occasionally rotates them when it ships a new font version; if
+    that happens the preload simply 404s (a few wasted bytes) and the
+    stylesheet fetches the correct file as it does today - no breakage,
+    no visual change either way.
+  -->
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+        href="https://fonts.gstatic.com/s/playfairdisplay/v40/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgA.woff2" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+        href="https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2" />
+
+  <!--
+    LCP: start the hero image download ~1s before Angular could.
+
+    Measured problem (Lighthouse 2026-08-16, network trace): the hero image
+    is only 49KB and transfers in 29ms, but its request did not START until
+    1098ms, because the <img> element does not exist until this chain
+    completes: main bundle -> Angular bootstrap -> lazy home chunk ->
+    SettingsService -> Firestore read of settings/site (292ms CORS
+    preflight + 341ms response) -> heroImage() resolves -> @if (showImage)
+    flips -> <img src> set. LCP was ~97% waiting, ~3% downloading. The
+    `fetchpriority="high"` already on that <img> is inert for the same
+    reason: you cannot prioritise a request that has not been queued.
+
+    This script reads ONLY the heroImage field over the Firestore REST API,
+    in parallel with the bundle download, and injects a preload link the
+    moment it returns. Two things make it cheaper than the SDK's own call:
+    `mask.fieldPaths` keeps the response to a couple of hundred bytes, and
+    a plain GET with no custom headers is a "simple" CORS request, so it
+    skips the 292ms preflight the SDK pays.
+
+    It deliberately does NOT feed SettingsService. Firestore REST returns
+    typed wire format ({"integerValue":"35"}) which does not match what the
+    SDK hands back; normalising it by hand would risk silently corrupting
+    the stats strip and admin form. Angular still performs its own normal
+    Firestore Lite read, completely unchanged. The cost of that choice is
+    one extra document read per page load - the masked response is tiny,
+    and the LCP win comes from the preload, not from deduplicating.
+
+    Fails silently by design: any error means no preload link, and the
+    normal Angular path proceeds exactly as before.
+
+    COUPLING: the transform string below must stay identical to
+    CloudinaryService.getCritical() (w_800,c_fill,f_auto,q_70 inserted
+    after "/upload/"). If they diverge, the URLs differ and the browser
+    downloads the image TWICE - slower than doing nothing. Change both or
+    neither.
+
+    CONFIG: projectId/apiKey are duplicated here because index.html is not
+    processed by angular.json's fileReplacements and cannot read
+    environment.ts. Both values already ship publicly in the JS bundle, so
+    this exposes nothing new - but it is a second place to update if the
+    Firebase project ever changes.
+  -->
+  <script>
+    (function () {
+      try {
+        var PROJECT_ID = 'naan-builders';
+        var API_KEY = 'AIzaSyCs7vGCEkCJPashW45zfByehd3fheFKcFk';
+        var url =
+          'https://firestore.googleapis.com/v1/projects/' + PROJECT_ID +
+          '/databases/(default)/documents/settings/site' +
+          '?key=' + API_KEY + '&mask.fieldPaths=heroImage';
+
+        fetch(url)
+          .then(function (res) { return res.ok ? res.json() : null; })
+          .then(function (doc) {
+            var raw =
+              doc && doc.fields && doc.fields.heroImage && doc.fields.heroImage.stringValue;
+            if (!raw || raw.indexOf('https://res.cloudinary.com') === -1) return;
+
+            var i = raw.indexOf('/upload/');
+            if (i === -1) return;
+
+            // Mirrors CloudinaryService.getCritical() exactly - see COUPLING above.
+            var href = raw.slice(0, i + 8) + 'w_800,c_fill,f_auto,q_70/' + raw.slice(i + 8);
+
+            var link = document.createElement('link');
+            link.rel = 'preload';
+            link.as = 'image';
+            link.setAttribute('fetchpriority', 'high');
+            link.href = href;
+            document.head.appendChild(link);
+          })
+          .catch(function () { /* no preload; Angular's own read still runs */ });
+      } catch (e) { /* never let this break page load */ }
+    })();
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!--
+    Font Awesome is now SELF-HOSTED as a subset containing only the icons
+    this app actually uses (see scripts/build-fontawesome-subset.mjs),
+    generated from @fortawesome/fontawesome-free@6.5.2 - the exact version
+    this previously loaded from cdnjs, so class names and glyphs are
+    byte-identical. That dropped the two webfont files from 269 KB to
+    ~6 KB combined and removed a third-party origin from the critical path
+    entirely (no more DNS/TLS to cdnjs).
+
+    Still loaded via preload + swap rather than a plain blocking
+    <link rel="stylesheet">: even same-origin, nothing needs this CSS for
+    the first paint (icons are decorative), so there is no reason to make
+    the browser wait for it before rendering text. The <noscript> copy
+    keeps icons working with JavaScript disabled.
+  -->
+  <link rel="preload" as="style" href="assets/fonts/fa/all.min.css"
+        onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript>
+    <link rel="stylesheet" href="assets/fonts/fa/all.min.css" />
+  </noscript>
+</head>
+<body>
+  <app-root>
+    <!-- Static skeleton shown before Angular bootstraps, improves perceived performance -->
+    <div class="boot-loader">
+      <div class="boot-loader__spinner"></div>
+    </div>
+  </app-root>
+</body>
+</html>

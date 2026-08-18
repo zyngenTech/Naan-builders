@@ -1,0 +1,17 @@
+.counter { text-align: center; }
+.counter__value {
+  font-family: var(--font-heading);
+  font-size: clamp(2.2rem, 4vw, 3.4rem);
+  font-weight: 800;
+  background: linear-gradient(120deg, var(--color-gold-light), var(--color-gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.counter__label {
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}

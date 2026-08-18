@@ -1,0 +1,11 @@
+<div class="toast-stack">
+  @for (toast of toastService.toasts(); track toast.id) {
+    <div class="toast-item" [class]="'toast-item--' + toast.type">
+      <i [class]="iconFor(toast.type)"></i>
+      <span>{{ toast.text }}</span>
+      <button (click)="toastService.dismiss(toast.id)" aria-label="Dismiss">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  }
+</div>

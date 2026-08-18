@@ -1,0 +1,47 @@
+<section class="hero" [class.hero--compact]="compact">
+  @if (showImage) {
+    <img class="hero__image" [src]="backgroundImage | cldOptimize:'critical'" alt="" appImgFallback fetchpriority="high" decoding="async" (error)="onImageError()" />
+  } @else {
+    <div class="hero__design">
+      <div class="hero__design-icon"><i class="fa-solid fa-building-columns"></i></div>
+    </div>
+  }
+
+  @if (showVideo) {
+    <video class="hero__video" [src]="backgroundVideo" [poster]="backgroundImage | cldOptimize:'critical'" preload="metadata" autoplay muted loop playsinline (error)="onVideoError()"></video>
+  }
+
+  <!-- Gold/black tint filter - keeps text readable and on-brand over any photo -->
+  <div class="hero__tint"></div>
+  <div class="hero__overlay-pattern"></div>
+
+  <div class="container-xl hero__content">
+    <div class="hero__content-inner">
+      @if (eyebrow) {
+        <span class="hero__eyebrow reveal is-visible">{{ eyebrow }}</span>
+      }
+      <h1 class="hero__title reveal is-visible">{{ title }}</h1>
+      @if (subtitle) {
+        <p class="hero__subtitle reveal is-visible">{{ subtitle }}</p>
+      }
+
+      @if (showButtons) {
+        <div class="hero__actions reveal is-visible">
+          <a routerLink="/projects" class="btn-luxury btn-luxury--primary">
+            <i class="fa-solid fa-arrow-right"></i> View Projects
+          </a>
+          <a routerLink="/contact" class="btn-luxury btn-luxury--outline">
+            <i class="fa-solid fa-phone"></i> Contact Us
+          </a>
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (!compact) {
+    <div class="hero__scroll-cue">
+      <span></span>
+      <small>Scroll</small>
+    </div>
+  }
+</section>

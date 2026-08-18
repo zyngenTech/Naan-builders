@@ -1,0 +1,57 @@
+<div class="admin-multi-upload">
+  <label class="admin-multi-upload__label">{{ label }}</label>
+  @if (sizeHint) {
+    <span class="admin-multi-upload__hint">Recommended: {{ sizeHint }}</span>
+  }
+
+  <div class="admin-multi-upload__grid">
+    @for (url of urls; track url; let i = $index) {
+      <div class="admin-multi-upload__item">
+        @if (failedUrls().has(url)) {
+          <div class="admin-multi-upload__error"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        } @else if (accept === 'video') {
+          <video [src]="url" muted (error)="onMediaError(url)"></video>
+          <span class="admin-multi-upload__play"><i class="fa-solid fa-circle-play"></i></span>
+        } @else {
+          <img [src]="url" alt="Gallery image" (error)="onMediaError(url)" />
+        }
+        <button type="button" (click)="removeAt(i)" aria-label="Remove file">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    }
+
+    @if (!showUrlInput()) {
+      <label class="admin-multi-upload__add">
+        @if (isUploading()) {
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          <span>{{ progress() }}%</span>
+        } @else {
+          <i class="fa-solid fa-plus"></i>
+          <span>Add</span>
+        }
+        <input type="file" [accept]="acceptAttr" multiple (change)="onFilesSelected($event)" hidden [disabled]="isUploading()" />
+      </label>
+    }
+  </div>
+
+  <div class="admin-multi-upload__url-toggle">
+    <button type="button" (click)="toggleUrlInput()">
+      <i class="fa-solid" [class.fa-link]="!showUrlInput()" [class.fa-xmark]="showUrlInput()"></i>
+      {{ showUrlInput() ? 'Cancel' : 'Or paste a URL instead' }}
+    </button>
+  </div>
+
+  @if (showUrlInput()) {
+    <div class="admin-multi-upload__url-row">
+      <input
+        type="url"
+        placeholder="https://..."
+        [ngModel]="urlInput()"
+        (ngModelChange)="urlInput.set($event)"
+        (keydown.enter)="$event.preventDefault(); addUrl()"
+      />
+      <button type="button" class="admin-btn admin-btn--primary admin-btn--sm" (click)="addUrl()">Add</button>
+    </div>
+  }
+</div>

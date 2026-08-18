@@ -1,0 +1,73 @@
+@if (!showForm()) {
+  <div class="admin-card">
+    <div class="admin-manager-header">
+      <div>
+        <h2>Journey / Milestones</h2>
+        <p class="admin-card__subtitle">{{ milestones().length }} milestone(s) - shown on the About page timeline</p>
+      </div>
+      <button class="admin-btn admin-btn--primary admin-btn--sm" (click)="openAddForm()">
+        <i class="fa-solid fa-plus"></i> Add Milestone
+      </button>
+    </div>
+
+    @if (isLoading()) {
+      <div class="admin-empty"><span class="admin-spinner"></span> Loading milestones...</div>
+    } @else if (milestones().length === 0) {
+      <div class="admin-empty">No milestones yet - click "Add Milestone" to start your company's timeline (e.g. 2006).</div>
+    } @else {
+      <div class="admin-list">
+        @for (m of milestones(); track m.id) {
+          <div class="admin-list-item admin-list-item--milestone">
+            <div class="admin-list-item__year">{{ m.year }}</div>
+            <div class="admin-list-item__body">
+              <strong>{{ m.title }}</strong>
+              <span>{{ m.description }}</span>
+            </div>
+            <div class="admin-list-item__actions">
+              <button (click)="openEditForm(m)" aria-label="Edit"><i class="fa-solid fa-pen"></i></button>
+              <button class="is-danger" (click)="deleteMilestone(m)" aria-label="Delete"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+} @else {
+  <div class="admin-card">
+    <div class="admin-manager-header">
+      <h2>{{ editingId() ? 'Edit Milestone' : 'Add Milestone' }}</h2>
+      <button class="admin-btn admin-btn--outline admin-btn--sm" (click)="cancelForm()">
+        <i class="fa-solid fa-xmark"></i> Cancel
+      </button>
+    </div>
+
+    <form [formGroup]="milestoneForm" (ngSubmit)="onSubmit()" novalidate>
+      <div class="admin-form-grid">
+        <div class="admin-field">
+          <label for="year">Year *</label>
+          <input id="year" type="text" formControlName="year" placeholder="e.g. 2006" [class.is-invalid]="f.year.invalid && f.year.touched" />
+        </div>
+        <div class="admin-field">
+          <label for="order">Display Order</label>
+          <input id="order" type="number" formControlName="order" />
+        </div>
+        <div class="admin-form-grid__full admin-field">
+          <label for="title">Title *</label>
+          <input id="title" type="text" formControlName="title" placeholder="e.g. Started Independent Practice" [class.is-invalid]="f.title.invalid && f.title.touched" />
+        </div>
+        <div class="admin-form-grid__full admin-field">
+          <label for="description">Description *</label>
+          <textarea id="description" rows="3" formControlName="description" [class.is-invalid]="f.description.invalid && f.description.touched"></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="admin-btn admin-btn--primary admin-btn--full" [disabled]="isSaving()">
+        @if (isSaving()) {
+          <span class="admin-spinner"></span> Saving...
+        } @else {
+          <i class="fa-solid fa-floppy-disk"></i> {{ editingId() ? 'Update Milestone' : 'Save Milestone' }}
+        }
+      </button>
+    </form>
+  </div>
+}

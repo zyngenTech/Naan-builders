@@ -1,0 +1,18 @@
+<app-loader-modal [visible]="isLoading()" [logoUrl]="logoUrl()"></app-loader-modal>
+
+@if (!isAdminRoute()) {
+  <app-navbar></app-navbar>
+}
+
+<main [class.app-main--booting]="!hasRenderedRoute()">
+  <router-outlet></router-outlet>
+</main>
+
+@if (!isAdminRoute()) {
+  <app-footer></app-footer>
+  <!-- Global overlays: floating WhatsApp/Call buttons, scroll-to-top -->
+  <app-floating-buttons></app-floating-buttons>
+  <app-scroll-top></app-scroll-top>
+}
+
+<app-toast></app-toast>
