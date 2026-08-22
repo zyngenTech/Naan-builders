@@ -15,7 +15,7 @@ export const environment = {
   // >>> WHEN YOUR CUSTOM DOMAIN GOES LIVE, CHANGE IT HERE (and in
   // >>> src/index.html + re-run scripts/generate-sitemap.mjs). This is the
   // >>> only place the app itself reads it from.
-  siteUrl: 'https://naan-builders.web.app',
+  siteUrl: 'https://naanbuilders.in',
   contact: {
     phone: '+91 90000 00000',
     whatsapp: '919000000000',
