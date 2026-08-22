@@ -14,18 +14,34 @@ export class GalleryService {
   private firebaseService = inject(FirebaseService);
   private cacheService = inject(CacheService);
 
+  /**
+   * `useTransferState: false` (5th arg) - always does a live Firestore read
+   * on first client load rather than trusting the prerendered build-time
+   * snapshot, so a photo added in Admin shows on the public site the next
+   * time anyone loads the page - no redeploy needed. See the long comment
+   * on CacheService.get() and SettingsService.getSiteSettings() for the
+   * full reasoning (this is the same fix, applied here at the client's
+   * request: every content type must "save and show live", not just
+   * settings). The prerendered snapshot is still generated at build time
+   * and still what Google's first crawl sees - this only changes what the
+   * browser trusts once it boots.
+   */
   getAllItems(): Observable<GalleryItemModel[]> {
     logger.log('[GalleryService] Loading gallery items');
-    return this.cacheService.get(CACHE_KEY, () =>
-      this.firebaseService
-        .getData<GalleryItemModel>(COLLECTION, [orderBy('createdDate', 'desc')])
-        .pipe(
-          tap((items) => logger.log(`[GalleryService] Images loaded (${items.length})`)),
-          catchError((error) => {
-            logger.error('[GalleryService] Failed to load gallery items', error);
-            throw error;
-          })
-        )
+    return this.cacheService.get(
+      CACHE_KEY,
+      () =>
+        this.firebaseService
+          .getData<GalleryItemModel>(COLLECTION, [orderBy('createdDate', 'desc')])
+          .pipe(
+            tap((items) => logger.log(`[GalleryService] Images loaded (${items.length})`)),
+            catchError((error) => {
+              logger.error('[GalleryService] Failed to load gallery items', error);
+              throw error;
+            })
+          ),
+      undefined,
+      false
     );
   }
 

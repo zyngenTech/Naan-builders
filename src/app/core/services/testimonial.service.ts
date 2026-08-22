@@ -14,18 +14,23 @@ export class TestimonialService {
   private firebaseService = inject(FirebaseService);
   private cacheService = inject(CacheService);
 
+  /** `useTransferState: false` - see the note on GalleryService.getAllItems(). */
   getAllTestimonials(): Observable<TestimonialModel[]> {
     logger.log('[TestimonialService] Loading testimonials');
-    return this.cacheService.get(CACHE_KEY, () =>
-      this.firebaseService
-        .getData<TestimonialModel>(COLLECTION, [orderBy('createdDate', 'desc')])
-        .pipe(
-          tap((list) => logger.log(`[TestimonialService] ${list.length} testimonials loaded`)),
-          catchError((error) => {
-            logger.error('[TestimonialService] Failed to load testimonials', error);
-            throw error;
-          })
-        )
+    return this.cacheService.get(
+      CACHE_KEY,
+      () =>
+        this.firebaseService
+          .getData<TestimonialModel>(COLLECTION, [orderBy('createdDate', 'desc')])
+          .pipe(
+            tap((list) => logger.log(`[TestimonialService] ${list.length} testimonials loaded`)),
+            catchError((error) => {
+              logger.error('[TestimonialService] Failed to load testimonials', error);
+              throw error;
+            })
+          ),
+      undefined,
+      false
     );
   }
 

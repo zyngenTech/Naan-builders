@@ -15,18 +15,23 @@ export class ServiceOfferingService {
   private firebaseService = inject(FirebaseService);
   private cacheService = inject(CacheService);
 
+  /** `useTransferState: false` - see the note on GalleryService.getAllItems(). */
   getAllServices(): Observable<ServiceModel[]> {
     logger.log('[ServiceOfferingService] Loading services');
-    return this.cacheService.get(CACHE_KEY, () =>
-      this.firebaseService
-        .getData<ServiceModel>(COLLECTION, [orderBy('order', 'asc')])
-        .pipe(
-          tap((list) => logger.log(`[ServiceOfferingService] ${list.length} services loaded`)),
-          catchError((error) => {
-            logger.error('[ServiceOfferingService] Failed to load services', error);
-            throw error;
-          })
-        )
+    return this.cacheService.get(
+      CACHE_KEY,
+      () =>
+        this.firebaseService
+          .getData<ServiceModel>(COLLECTION, [orderBy('order', 'asc')])
+          .pipe(
+            tap((list) => logger.log(`[ServiceOfferingService] ${list.length} services loaded`)),
+            catchError((error) => {
+              logger.error('[ServiceOfferingService] Failed to load services', error);
+              throw error;
+            })
+          ),
+      undefined,
+      false
     );
   }
 

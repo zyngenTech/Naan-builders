@@ -18,19 +18,28 @@ export class ProjectService {
   private firebaseService = inject(FirebaseService);
   private cacheService = inject(CacheService);
 
-  /** All projects, most recently completed first. */
+  /**
+   * All projects, most recently completed first.
+   * `useTransferState: false` - see the note on GalleryService.getAllItems():
+   * a project added in Admin must show on the public list the next time
+   * anyone loads the page, not only after the next deploy.
+   */
   getAllProjects(): Observable<ProjectModel[]> {
     logger.log('[ProjectService] Loading all projects');
-    return this.cacheService.get('projects-all', () =>
-      this.firebaseService
-        .getData<ProjectModel>(COLLECTION, [orderBy('completedDate', 'desc')])
-        .pipe(
-          tap((projects) => logger.log(`[ProjectService] ${projects.length} projects loaded`)),
-          catchError((error) => {
-            logger.error('[ProjectService] Failed to load projects', error);
-            throw error;
-          })
-        )
+    return this.cacheService.get(
+      'projects-all',
+      () =>
+        this.firebaseService
+          .getData<ProjectModel>(COLLECTION, [orderBy('completedDate', 'desc')])
+          .pipe(
+            tap((projects) => logger.log(`[ProjectService] ${projects.length} projects loaded`)),
+            catchError((error) => {
+              logger.error('[ProjectService] Failed to load projects', error);
+              throw error;
+            })
+          ),
+      undefined,
+      false
     );
   }
 
@@ -39,32 +48,44 @@ export class ProjectService {
    * Filters by `featured` only (no orderBy) so this never needs a Firestore
    * composite index - the result is sorted by completedDate client-side
    * instead, since the list is always small.
+   * `useTransferState: false` - see the note on getAllProjects() above.
    */
   getFeaturedProjects(): Observable<ProjectModel[]> {
     logger.log('[ProjectService] Loading featured projects');
-    return this.cacheService.get('projects-featured', () =>
-      this.firebaseService.getData<ProjectModel>(COLLECTION, [where('featured', '==', true)]).pipe(
-        map((projects) =>
-          [...projects].sort((a, b) => new Date(b.completedDate).getTime() - new Date(a.completedDate).getTime())
+    return this.cacheService.get(
+      'projects-featured',
+      () =>
+        this.firebaseService.getData<ProjectModel>(COLLECTION, [where('featured', '==', true)]).pipe(
+          map((projects) =>
+            [...projects].sort((a, b) => new Date(b.completedDate).getTime() - new Date(a.completedDate).getTime())
+          ),
+          catchError((error) => {
+            logger.error('[ProjectService] Failed to load featured projects', error);
+            throw error;
+          })
         ),
-        catchError((error) => {
-          logger.error('[ProjectService] Failed to load featured projects', error);
-          throw error;
-        })
-      )
+      undefined,
+      false
     );
   }
 
-  /** Single project by id, used on the Project Details page. */
+  /**
+   * Single project by id, used on the Project Details page.
+   * `useTransferState: false` - see the note on getAllProjects() above.
+   */
   getProjectById(id: string): Observable<ProjectModel> {
     logger.log(`[ProjectService] Loading project "${id}"`);
-    return this.cacheService.get(`project-${id}`, () =>
-      this.firebaseService.getDocById<ProjectModel>(COLLECTION, id).pipe(
-        catchError((error) => {
-          logger.error(`[ProjectService] Failed to load project "${id}"`, error);
-          throw error;
-        })
-      )
+    return this.cacheService.get(
+      `project-${id}`,
+      () =>
+        this.firebaseService.getDocById<ProjectModel>(COLLECTION, id).pipe(
+          catchError((error) => {
+            logger.error(`[ProjectService] Failed to load project "${id}"`, error);
+            throw error;
+          })
+        ),
+      undefined,
+      false
     );
   }
 

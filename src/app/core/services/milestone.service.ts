@@ -15,18 +15,23 @@ export class MilestoneService {
   private firebaseService = inject(FirebaseService);
   private cacheService = inject(CacheService);
 
+  /** `useTransferState: false` - see the note on GalleryService.getAllItems(). */
   getAllMilestones(): Observable<MilestoneModel[]> {
     logger.log('[MilestoneService] Loading milestones');
-    return this.cacheService.get(CACHE_KEY, () =>
-      this.firebaseService
-        .getData<MilestoneModel>(COLLECTION, [orderBy('order', 'asc')])
-        .pipe(
-          tap((list) => logger.log(`[MilestoneService] ${list.length} milestones loaded`)),
-          catchError((error) => {
-            logger.error('[MilestoneService] Failed to load milestones', error);
-            throw error;
-          })
-        )
+    return this.cacheService.get(
+      CACHE_KEY,
+      () =>
+        this.firebaseService
+          .getData<MilestoneModel>(COLLECTION, [orderBy('order', 'asc')])
+          .pipe(
+            tap((list) => logger.log(`[MilestoneService] ${list.length} milestones loaded`)),
+            catchError((error) => {
+              logger.error('[MilestoneService] Failed to load milestones', error);
+              throw error;
+            })
+          ),
+      undefined,
+      false
     );
   }
 
