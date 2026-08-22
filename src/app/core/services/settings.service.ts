@@ -16,16 +16,35 @@ export class SettingsService {
   private firebaseService = inject(FirebaseService);
   private cacheService = inject(CacheService);
 
-  /** Fetches the site settings - cached so repeated calls in the same session share one request. */
+  /**
+   * Fetches the site settings - cached so repeated calls in the same session
+   * share one request.
+   *
+   * `useTransferState: false` (the 4th argument) - this is the one piece of
+   * content that opts out of reusing the prerendered build-time snapshot on
+   * the client. Settings carries the site's phone/email/address, which an
+   * Admin can change at any time; every other page (projects, gallery,
+   * testimonials...) is fine staying "as of the last deploy" until the next
+   * `npm run deploy`, but a stale contact email showing a real customer the
+   * wrong address to reach the business is a lost-lead bug, not an
+   * acceptable trade-off. This makes the browser always fetch current
+   * settings on first load instead of trusting whatever was baked in at
+   * build time - see the long comment on CacheService.get() for the full
+   * story and the incident that prompted it.
+   */
   getSiteSettings(): Observable<SiteSettingsModel> {
-    return this.cacheService.get(CACHE_KEY, () =>
-      this.firebaseService.getDocById<SiteSettingsModel>(COLLECTION, DOC_ID).pipe(
-        tap((settings) => logger.log('[SettingsService] Site settings loaded', settings)),
-        catchError((error) => {
-          logger.error('[SettingsService] Failed to load site settings', error);
-          throw error;
-        })
-      )
+    return this.cacheService.get(
+      CACHE_KEY,
+      () =>
+        this.firebaseService.getDocById<SiteSettingsModel>(COLLECTION, DOC_ID).pipe(
+          tap((settings) => logger.log('[SettingsService] Site settings loaded', settings)),
+          catchError((error) => {
+            logger.error('[SettingsService] Failed to load site settings', error);
+            throw error;
+          })
+        ),
+      undefined,
+      false
     );
   }
 

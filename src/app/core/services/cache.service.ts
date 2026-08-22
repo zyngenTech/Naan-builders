@@ -41,8 +41,27 @@ export class CacheService {
    * @param key Unique cache key
    * @param factory Function that returns an Observable
    * @param ttlMs Time-to-live in milliseconds (default: 5 minutes)
+   * @param useTransferState Reuse the server-prerendered value on first
+   *   browser hydration instead of re-fetching (default true - see the
+   *   long comment below). Pass `false` for data that must reflect an
+   *   Admin edit immediately rather than "as of the last deploy" - right
+   *   now that's just SettingsService (site-wide contact info: phone,
+   *   email, address). Content that changes rarely and isn't operationally
+   *   urgent (projects, gallery, testimonials, services, milestones) keeps
+   *   the default: it stays a build-time snapshot until the next deploy,
+   *   which is what makes it real, crawlable HTML for Google in the first
+   *   place. This was found in production: an Admin changed the contact
+   *   email, Firestore updated instantly, but the live site kept showing
+   *   the old email (baked into the prerendered HTML) until redeploy - a
+   *   wrong contact email is a lost-customer bug, not an acceptable
+   *   staleness window, which is why settings gets its own opt-out.
    */
-  get<T>(key: string, factory: () => Observable<T>, ttlMs: number = this.DEFAULT_TTL_MS): Observable<T> {
+  get<T>(
+    key: string,
+    factory: () => Observable<T>,
+    ttlMs: number = this.DEFAULT_TTL_MS,
+    useTransferState = true
+  ): Observable<T> {
     const now = Date.now();
     const entry = this.cache.get(key) as CacheEntry<T> | undefined;
 
@@ -60,12 +79,17 @@ export class CacheService {
     // work (and the reason it was fetched with PendingTasks in the first
     // place) would otherwise be thrown away on every single page load.
     const transferKey = makeStateKey<T>(`cache:${key}`);
-    if (this.isBrowser && this.transferState.hasKey(transferKey)) {
+    if (useTransferState && this.isBrowser && this.transferState.hasKey(transferKey)) {
       logger.log(`[CacheService] Using server-transferred state for key "${key}"`);
       const transferred$ = of(this.transferState.get(transferKey, null as unknown as T));
       this.transferState.remove(transferKey); // one-shot: stale after this read, next TTL cycle should hit Firestore
       this.cache.set(key, { data: transferred$, timestamp: now });
       return transferred$;
+    }
+    // Still consume (and discard) any transferred state for this key even
+    // when opted out, so it doesn't sit unused in the page's ng-state JSON.
+    if (!useTransferState && this.isBrowser && this.transferState.hasKey(transferKey)) {
+      this.transferState.remove(transferKey);
     }
 
     // Cache miss: execute factory, cache the result, and return
@@ -88,7 +112,7 @@ export class CacheService {
         // Only the server ever writes state to transfer - the browser
         // consumes it above and would otherwise just be re-saving its own
         // freshly-fetched data back into a state bag nobody reads again.
-        if (!this.isBrowser) {
+        if (!this.isBrowser && useTransferState) {
           this.transferState.set(transferKey, value);
         }
       }),
