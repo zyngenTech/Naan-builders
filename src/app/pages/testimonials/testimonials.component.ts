@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, PLATFORM_ID, inject, signal } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 import { HeroComponent } from '../../shared/components/hero/hero.component';
 import { LoaderComponent } from '../../shared/components/loader/loader.component';
@@ -24,6 +24,7 @@ import { logger } from '../../core/logger';
 export class TestimonialsComponent implements OnInit, OnDestroy {
   private testimonialService = inject(TestimonialService);
   private settingsService = inject(SettingsService);
+  private platformId = inject(PLATFORM_ID);
 
   readonly testimonials = signal<TestimonialModel[]>([]);
   readonly isLoading = signal(true);
@@ -39,7 +40,14 @@ export class TestimonialsComponent implements OnInit, OnDestroy {
       next: (testimonials) => {
         this.testimonials.set(testimonials);
         this.isLoading.set(false);
-        this.startAutoSlide();
+        // A recurring setInterval must never start during a build-time
+        // prerender: it keeps Angular's zone permanently "unstable", which
+        // hangs/fails the prerender step (there is no browser tab to ever
+        // navigate away and clear it). Real users only get the slider once
+        // this actually runs in a browser.
+        if (isPlatformBrowser(this.platformId)) {
+          this.startAutoSlide();
+        }
       },
       error: (error) => {
         logger.error('[TestimonialsComponent] Failed to load testimonials', error);

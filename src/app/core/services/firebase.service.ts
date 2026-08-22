@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PendingTasks, inject } from '@angular/core';
 import { getFirestore } from 'firebase/firestore/lite';
 import {
   collection,
@@ -15,7 +15,7 @@ import {
   QueryConstraint,
 } from 'firebase/firestore/lite';
 import { Observable, from, throwError } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError, finalize, map, tap } from 'rxjs/operators';
 import { firebaseApp } from '../firebase-app';
 import { logger } from '../logger';
 
@@ -46,6 +46,7 @@ import { logger } from '../logger';
 @Injectable({ providedIn: 'root' })
 export class FirebaseService {
   private firestore = getFirestore(firebaseApp);
+  private pendingTasks = inject(PendingTasks);
 
   // ------------------------------------------------------------------
   // FIRESTORE - READ (one-time; this is all Firestore Lite supports,
@@ -55,13 +56,27 @@ export class FirebaseService {
   /**
    * Fetches every document in a collection as an array, optionally
    * filtered/ordered via Firestore QueryConstraints (where, orderBy, limit...).
+   *
+   * `pendingTasks.add()`/`finalize` register this read with Angular's
+   * PendingTasks so build-time prerendering actually waits for it. Firestore
+   * Lite is a plain `fetch` client, invisible to zone.js, so without this
+   * Angular's stability check has no idea this request is in flight - the
+   * prerenderer would snapshot the DOM whenever it happened to feel like it
+   * (in practice, whenever AppComponent's unrelated 200ms loader timer
+   * fired), baking in a spinner or default placeholder text on whichever
+   * pages hadn't resolved yet by chance. That was caught by testing two
+   * back-to-back builds of the exact same source and finding a different,
+   * non-overlapping set of pages broken in the second one - a build that
+   * "looks fine" proves nothing about the next one without this.
    */
   getData<T>(collectionName: string, constraints: QueryConstraint[] = []): Observable<T[]> {
     logger.log(`[FirebaseService] Loading collection "${collectionName}"`);
     const colRef = collection(this.firestore, collectionName);
     const q = constraints.length ? query(colRef, ...constraints) : query(colRef);
+    const done = this.pendingTasks.add();
 
     return from(getDocs(q)).pipe(
+      finalize(done),
       map((snapshot) => snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }) as T)),
       tap((data) => logger.log(`[FirebaseService] "${collectionName}" loaded (${data.length} docs)`)),
       catchError((error) => {
@@ -75,12 +90,15 @@ export class FirebaseService {
    * Fetches a single document by id. Emits `undefined` (not an error) if
    * the document doesn't exist yet - callers already handle that case
    * (e.g. the "settings/site" document before Admin has saved anything).
+   * See the PendingTasks note on `getData` above - same reasoning applies.
    */
   getDocById<T>(collectionName: string, id: string): Observable<T> {
     logger.log(`[FirebaseService] Loading document "${collectionName}/${id}"`);
     const docRef = doc(this.firestore, collectionName, id);
+    const done = this.pendingTasks.add();
 
     return from(getDoc(docRef)).pipe(
+      finalize(done),
       map((snap) => (snap.exists() ? ({ id: snap.id, ...snap.data() } as T) : (undefined as unknown as T))),
       tap(() => logger.log(`[FirebaseService] Document "${collectionName}/${id}" loaded`)),
       catchError((error) => {

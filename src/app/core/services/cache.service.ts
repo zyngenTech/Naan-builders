@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
-import { Observable, shareReplay, throwError, timer } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import { Injectable, PLATFORM_ID, TransferState, inject, makeStateKey } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Observable, of, shareReplay, throwError, timer } from 'rxjs';
+import { catchError, switchMap, tap } from 'rxjs/operators';
 import { logger } from '../logger';
 
 interface CacheEntry<T> {
@@ -20,11 +21,20 @@ interface CacheEntry<T> {
  *
  * The returned Observable will be shared across all subscribers, and cached
  * results will be reused until the TTL expires (default 5 minutes).
+ *
+ * Also carries every result across the server/browser boundary via Angular's
+ * TransferState (see the `get()` body). Every call site already passes a
+ * key that uniquely identifies its exact query (e.g. ProjectService uses
+ * 'projects-all', 'projects-featured' and `project-${id}` - three different
+ * queries against the same "projects" collection), which makes this cache
+ * key exactly the right thing to reuse as the TransferState key too.
  */
 @Injectable({ providedIn: 'root' })
 export class CacheService {
   private cache = new Map<string, CacheEntry<unknown>>();
   private readonly DEFAULT_TTL_MS = 5 * 60 * 1000; // 5 minutes
+  private transferState = inject(TransferState);
+  private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   /**
    * Get a value from cache, or execute the factory function and cache the result.
@@ -40,6 +50,22 @@ export class CacheService {
     if (entry && now - entry.timestamp < ttlMs) {
       logger.log(`[CacheService] Cache hit for key "${key}" (age: ${now - entry.timestamp}ms)`);
       return entry.data;
+    }
+
+    // First browser-side read after hydration: reuse whatever the server
+    // already fetched for this exact key instead of re-requesting it.
+    // Without this, every prerendered page repaints from real content to a
+    // loading spinner and back the instant the client boots and this same
+    // `get()` call runs again with an empty in-memory cache - the server's
+    // work (and the reason it was fetched with PendingTasks in the first
+    // place) would otherwise be thrown away on every single page load.
+    const transferKey = makeStateKey<T>(`cache:${key}`);
+    if (this.isBrowser && this.transferState.hasKey(transferKey)) {
+      logger.log(`[CacheService] Using server-transferred state for key "${key}"`);
+      const transferred$ = of(this.transferState.get(transferKey, null as unknown as T));
+      this.transferState.remove(transferKey); // one-shot: stale after this read, next TTL cycle should hit Firestore
+      this.cache.set(key, { data: transferred$, timestamp: now });
+      return transferred$;
     }
 
     // Cache miss: execute factory, cache the result, and return
@@ -58,6 +84,14 @@ export class CacheService {
     // connection came back. Evicting on error makes the next subscriber a
     // cache miss, which re-runs the factory and recovers.
     const data$ = factory().pipe(
+      tap((value) => {
+        // Only the server ever writes state to transfer - the browser
+        // consumes it above and would otherwise just be re-saving its own
+        // freshly-fetched data back into a state bag nobody reads again.
+        if (!this.isBrowser) {
+          this.transferState.set(transferKey, value);
+        }
+      }),
       catchError((error) => {
         logger.error(`[CacheService] Factory failed for key "${key}" - evicting so the next read retries`, error);
         // Only evict if this exact entry is still the cached one, so a

@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /admin/
 
-Sitemap: https://naan-builders.web.app/sitemap.xml
+Sitemap: https://naanbuilders.in/sitemap.xml

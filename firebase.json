@@ -5,6 +5,20 @@
     "cleanUrls": true,
     "trailingSlash": false,
     "rewrites": [
+      {
+        "comment": "/admin and /admin/login are deliberately NOT prerendered (see src/app/app.routes.server.ts) - they need a live auth check and must never ship pre-baked HTML. Since prerendering now makes '/' resolve to the real, fully-rendered home page file, the generic '**' rewrite below would otherwise serve THAT home-page HTML for an /admin request - a visible flash of the wrong page plus an Angular hydration mismatch, because the router immediately tries to render the Admin component into a DOM tree built for the Home page. index.csr.html is the neutral, un-prerendered app shell Angular generates specifically for Client-render-mode routes; routing admin here first avoids both problems.",
+        "source": "/admin",
+        "destination": "/index.csr.html"
+      },
+      {
+        "source": "/admin/**",
+        "destination": "/index.csr.html"
+      },
+      {
+        "comment": "A /projects/:id whose id was NOT prerendered (e.g. a project added in Admin after the last deploy) has no static file on disk, so it would otherwise fall through to the generic '**' rewrite below and get served the prerendered HOME page's HTML for that URL - the same hydration-mismatch/content-flash problem as /admin, just for an unbounded set of ids instead of two fixed paths. This only ever applies to an unprerendered id: Firebase Hosting serves a matching static file (e.g. /projects/cJEZ0HL6MYTzD2AbUYat/index.html) directly, without even consulting rewrites, whenever one exists - so a real, already-prerendered project page is unaffected by this rule.",
+        "source": "/projects/**",
+        "destination": "/index.csr.html"
+      },
       { "source": "**", "destination": "/index.html" }
     ],
     "headers": [
@@ -14,8 +28,25 @@
         "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
       },
       {
-        "comment": "index.html must NOT be cached, or browsers keep serving an old shell that points at deleted hashed bundles after a deploy - the classic 'site broken until hard refresh' bug.",
-        "source": "/index.html",
+        "comment": "HTML documents must NOT be cached, or browsers keep serving an old page that points at deleted hashed bundles after a deploy - the classic 'site broken until hard refresh' bug. Before prerendering there was exactly one HTML file (index.html, reused for every route); now there is a real HTML file per page, so every route needs this explicitly - a single '/index.html' rule would not even match a request to '/' under cleanUrls, let alone '/about' or '/projects/<id>'. Split into plain, unambiguous sources (no extglob-in-extglob tricks) so each one is easy to verify by eye.",
+        "source": "/",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
+      },
+      {
+        "source": "/@(about|services|projects|gallery|testimonials|contact)",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
+      },
+      {
+        "source": "/projects/**",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
+      },
+      {
+        "comment": "index.csr.html is the app shell served (via the rewrites above) for /admin and any project id not yet prerendered - same staleness risk as any other HTML document.",
+        "source": "/admin",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
+      },
+      {
+        "source": "/admin/**",
         "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
       },
       {

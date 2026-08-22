@@ -20,7 +20,7 @@
  */
 import { writeFileSync } from 'node:fs';
 
-const SITE_URL = 'https://naan-builders.web.app'; // no trailing slash
+const SITE_URL = 'https://naanbuilders.in'; // no trailing slash
 const PROJECT_ID = 'naan-builders';
 const API_KEY = 'AIzaSyCs7vGCEkCJPashW45zfByehd3fheFKcFk';
 const OUT = 'src/sitemap.xml';
